@@ -1,7 +1,9 @@
 package com.tiffzy.restaurant.data.repository
 
-import com.tiffzy.restaurant.data.model.Cart
-import com.tiffzy.restaurant.data.model.CartItem
+import com.tiffzy.restaurant.core.base.BaseRepository
+import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.model.*
+import com.tiffzy.restaurant.data.remote.ApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,16 +11,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CartRepository @Inject constructor() {
+class CartRepository @Inject constructor(
+    private val apiService: ApiService
+) : BaseRepository() {
     private val _cart = MutableStateFlow(Cart())
     val cart: StateFlow<Cart> = _cart.asStateFlow()
 
     fun addToCart(item: CartItem) {
         val currentCart = _cart.value
         
-        // If adding from a different restaurant, clear cart first (standard food app behavior)
         if (currentCart.restaurantSlug != null && currentCart.restaurantSlug != item.restaurantSlug) {
-            _cart.value = Cart(items = listOf(item), restaurantSlug = item.restaurantSlug)
+            _cart.value = Cart(
+                items = listOf(item), 
+                restaurantSlug = item.restaurantSlug,
+                restaurantName = item.restaurantName
+            )
             return
         }
 
@@ -36,7 +43,11 @@ class CartRepository @Inject constructor() {
             items.add(item)
         }
 
-        _cart.value = Cart(items = items, restaurantSlug = item.restaurantSlug)
+        _cart.value = currentCart.copy(
+            items = items, 
+            restaurantSlug = item.restaurantSlug,
+            restaurantName = item.restaurantName
+        )
     }
 
     fun removeFromCart(item: CartItem) {
@@ -58,7 +69,27 @@ class CartRepository @Inject constructor() {
         }
 
         val slug = if (items.isEmpty()) null else currentCart.restaurantSlug
-        _cart.value = Cart(items = items, restaurantSlug = slug)
+        val name = if (items.isEmpty()) null else currentCart.restaurantName
+        _cart.value = currentCart.copy(items = items, restaurantSlug = slug, restaurantName = name)
+    }
+
+    suspend fun applyCoupon(code: String): Resource<Coupon> {
+        val currentCart = _cart.value
+        if (currentCart.restaurantSlug == null) return Resource.Error("Cart is empty")
+        
+        val result = safeApiCall { 
+            apiService.applyCoupon(CouponRequest(code, currentCart.subtotal, currentCart.restaurantSlug))
+        }
+        
+        if (result is Resource.Success) {
+            _cart.value = _cart.value.copy(appliedCoupon = result.data)
+        }
+        
+        return result
+    }
+
+    fun removeCoupon() {
+        _cart.value = _cart.value.copy(appliedCoupon = null)
     }
 
     fun clearCart() {

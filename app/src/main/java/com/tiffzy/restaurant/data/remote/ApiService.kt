@@ -58,6 +58,9 @@ interface ApiService {
     @GET("r/{slug}/menu")
     suspend fun getRestaurantMenu(@Path("slug") slug: String): RestaurantMenuResponse
 
+    @POST("customer/apply-coupon")
+    suspend fun applyCoupon(@Body request: CouponRequest): Coupon
+
     @POST("r/{slug}/order")
     suspend fun placeOrder(@Path("slug") slug: String, @Body request: OrderRequest): OrderResponse
 

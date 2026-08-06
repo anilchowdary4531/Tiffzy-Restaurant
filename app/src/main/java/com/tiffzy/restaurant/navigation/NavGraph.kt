@@ -14,6 +14,8 @@ import androidx.navigation.navDeepLink
 import com.tiffzy.restaurant.ui.auth.*
 import com.tiffzy.restaurant.ui.home.HomeScreen
 import com.tiffzy.restaurant.ui.home.HomeViewModel
+import com.tiffzy.restaurant.ui.home.cart.CartScreen
+import com.tiffzy.restaurant.ui.home.cart.CartViewModel
 import com.tiffzy.restaurant.ui.home.details.RestaurantDetailScreen
 import com.tiffzy.restaurant.ui.home.details.RestaurantDetailViewModel
 import com.tiffzy.restaurant.ui.restaurant.*
@@ -140,7 +142,18 @@ fun NavGraph(
                 viewModel = detailViewModel,
                 onBack = { navController.popBackStack() },
                 onNavigateToCart = {
-                    // navController.navigate(Screen.Cart.route)
+                    navController.navigate(Screen.Cart.route)
+                }
+            )
+        }
+
+        composable(Screen.Cart.route) {
+            val cartViewModel: CartViewModel = hiltViewModel()
+            CartScreen(
+                viewModel = cartViewModel,
+                onBack = { navController.popBackStack() },
+                onNavigateToCheckout = {
+                    // navController.navigate(Screen.Checkout.route)
                 }
             )
         }
