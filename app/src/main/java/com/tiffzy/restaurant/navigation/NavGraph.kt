@@ -132,6 +132,9 @@ fun NavGraph(
                 viewModel = homeViewModel,
                 onNavigateToRestaurant = { restaurant ->
                     navController.navigate(Screen.RestaurantDetail.createRoute(restaurant.slug))
+                },
+                onNavigateToAddresses = {
+                    navController.navigate(Screen.AddressList.route)
                 }
             )
         }

@@ -17,11 +17,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.foundation.clickable
+
 @Composable
 fun HomeHeader(
     location: String,
     onSearchQueryChange: (String) -> Unit,
     searchQuery: String,
+    onLocationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -34,7 +37,10 @@ fun HomeHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.clickable { onLocationClick() },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     Icons.Default.LocationOn,
                     contentDescription = null,

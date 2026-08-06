@@ -30,7 +30,8 @@ import com.tiffzy.restaurant.ui.home.components.*
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onNavigateToRestaurant: (Restaurant) -> Unit
+    onNavigateToRestaurant: (Restaurant) -> Unit,
+    onNavigateToAddresses: () -> Unit
 ) {
     val homeState by viewModel.homeState.collectAsState()
     val location by viewModel.currentLocation.collectAsState()
@@ -48,7 +49,8 @@ fun HomeScreen(
             HomeHeader(
                 location = location,
                 searchQuery = searchQuery,
-                onSearchQueryChange = { viewModel.onSearchQueryChange(it) }
+                onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
+                onLocationClick = onNavigateToAddresses
             )
         }
     ) { padding ->
