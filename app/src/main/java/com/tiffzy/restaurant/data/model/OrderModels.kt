@@ -1,23 +1,25 @@
 package com.tiffzy.restaurant.data.model
 
 data class OrderRequest(
-    val customerName: String,
-    val phone: String,
-    val email: String?,
-    val tableNumber: String?,
-    val fulfillment: String, // delivery | pickup | dinein
-    val deliveryAddress: String?,
-    val deliveryLatitude: Double?,
-    val deliveryLongitude: Double?,
-    val notes: String?,
-    val items: List<OrderItemRequest>
+    val restaurantSlug: String,
+    val items: List<OrderItemRequest>,
+    val deliveryAddressId: Int?,
+    val deliveryInstructions: String?,
+    val couponCode: String?,
+    val paymentMethod: String, // cod | online | wallet
+    val useWallet: Boolean = false,
+    val subtotal: Double,
+    val taxAmount: Double,
+    val deliveryCharge: Double,
+    val packingCharge: Double,
+    val totalAmount: Double
 )
 
 data class OrderItemRequest(
-    val id: Int,
-    val name: String,
-    val price: Double,
-    val qty: Int
+    val menuItemId: Int,
+    val quantity: Int,
+    val variantId: Int? = null,
+    val addOnIds: List<Int> = emptyList()
 )
 
 data class OrderResponse(

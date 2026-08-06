@@ -58,6 +58,10 @@ class AuthRepository @Inject constructor(
         return safeApiCall { apiService.registerFcmToken(RegisterFcmTokenRequest(token)) }
     }
 
+    suspend fun getProfile(): Resource<CustomerProfileResponse> {
+        return safeApiCall { apiService.getProfile() }
+    }
+
     suspend fun getAuthToken(): String? = sessionManager.authToken.first()
     
     suspend fun getAccountType(): String? = sessionManager.accountType.first()

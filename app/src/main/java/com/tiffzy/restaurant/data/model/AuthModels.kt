@@ -29,7 +29,8 @@ data class Customer(
     val id: Int,
     val phone: String,
     val name: String?,
-    val email: String?
+    val email: String?,
+    val walletBalance: Double = 0.0
 )
 
 data class CustomerProfileResponse(

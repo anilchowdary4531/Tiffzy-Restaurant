@@ -65,6 +65,14 @@ class RestaurantRepository @Inject constructor(
         return safeApiCall { apiService.getRestaurantDetails(slug) }
     }
 
+    suspend fun getRestaurantMenu(slug: String): Resource<RestaurantMenuResponse> {
+        return safeApiCall { apiService.getRestaurantMenu(slug) }
+    }
+
+    suspend fun placeOrder(slug: String, request: OrderRequest): Resource<OrderResponse> {
+        return safeApiCall { apiService.placeOrder(slug, request) }
+    }
+
     // Existing Owner logic...
     fun getCachedMenu(restaurantId: Int): Flow<List<MenuItem>> {
         return menuItemDao.getMenuItems(restaurantId).map { entities ->
