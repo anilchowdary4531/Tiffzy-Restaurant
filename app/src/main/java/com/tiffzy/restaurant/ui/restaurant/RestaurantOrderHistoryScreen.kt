@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.tiffzy.restaurant.data.model.OrderDetails
 import com.tiffzy.restaurant.ui.components.TiffzyEmptyState
 import com.tiffzy.restaurant.ui.components.TiffzyErrorState
@@ -27,7 +27,7 @@ import com.tiffzy.restaurant.ui.theme.Dimens
 fun RestaurantOrderHistoryScreen(
     onOrderClick: (Int) -> Unit,
     onBack: () -> Unit,
-    viewModel: RestaurantOrderHistoryViewModel = viewModel()
+    viewModel: RestaurantOrderHistoryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentFilter by viewModel.currentStatusFilter.collectAsState()

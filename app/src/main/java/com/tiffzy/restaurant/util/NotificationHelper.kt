@@ -1,4 +1,4 @@
-package com.tiffzy.restaurant.utils
+package com.tiffzy.restaurant.util
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

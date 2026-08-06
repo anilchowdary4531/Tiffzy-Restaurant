@@ -2,13 +2,14 @@ package com.tiffzy.restaurant.ui.restaurant
 
 import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tiffzy.restaurant.data.local.AuthDataStore
+import com.tiffzy.restaurant.core.base.BaseViewModel
+import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.local.SessionManager
 import com.tiffzy.restaurant.data.model.MenuItem
 import com.tiffzy.restaurant.data.model.MenuRequest
-import com.tiffzy.restaurant.data.remote.RetrofitClient
 import com.tiffzy.restaurant.data.repository.RestaurantRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +20,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
+import javax.inject.Inject
 
 sealed class MenuUiState {
     object Loading : MenuUiState()
@@ -26,9 +28,12 @@ sealed class MenuUiState {
     data class Error(val message: String) : MenuUiState()
 }
 
-class RestaurantMenuViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = RestaurantRepository(RetrofitClient.apiService)
-    private val authDataStore = AuthDataStore(application)
+@HiltViewModel
+class RestaurantMenuViewModel @Inject constructor(
+    private val application: Application,
+    private val repository: RestaurantRepository,
+    private val sessionManager: SessionManager
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow<MenuUiState>(MenuUiState.Loading)
     val uiState: StateFlow<MenuUiState> = _uiState.asStateFlow()
@@ -37,23 +42,40 @@ class RestaurantMenuViewModel(application: Application) : AndroidViewModel(appli
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
     init {
+        observeMenu()
         loadMenu()
+    }
+
+    private fun observeMenu() {
+        viewModelScope.launch {
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                repository.getCachedMenu(ridString.toInt()).collect { menu ->
+                    if (menu.isNotEmpty()) {
+                        _uiState.value = MenuUiState.Success(menu)
+                    }
+                }
+            }
+        }
     }
 
     fun loadMenu() {
         viewModelScope.launch {
-            _uiState.value = MenuUiState.Loading
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val restaurantId = ridString.toInt()
-                    val menu = repository.getOwnerMenu(restaurantId)
-                    _uiState.value = MenuUiState.Success(menu)
-                } else {
-                    _uiState.value = MenuUiState.Error("Unauthorized")
+            if (_uiState.value !is MenuUiState.Success) {
+                _uiState.value = MenuUiState.Loading
+            }
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                when (val result = repository.refreshMenu(ridString.toInt())) {
+                    is Resource.Error -> {
+                        if (_uiState.value !is MenuUiState.Success) {
+                            _uiState.value = MenuUiState.Error(result.message)
+                        }
+                    }
+                    else -> {}
                 }
-            } catch (e: Exception) {
-                _uiState.value = MenuUiState.Error(e.message ?: "Failed to load menu")
+            } else {
+                _uiState.value = MenuUiState.Error("Unauthorized")
             }
         }
     }
@@ -70,84 +92,74 @@ class RestaurantMenuViewModel(application: Application) : AndroidViewModel(appli
     ) {
         viewModelScope.launch {
             _isSaving.value = true
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val restaurantId = ridString.toInt()
-                    val request = MenuRequest(name, description, category, image, price, isAvailable)
-                    if (id == null) {
-                        repository.createMenuItem(restaurantId, request)
-                    } else {
-                        repository.updateMenuItem(restaurantId, id, request)
-                    }
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                val restaurantId = ridString.toInt()
+                val request = MenuRequest(name, description, category, image, price, isAvailable)
+                val result = if (id == null) {
+                    repository.createMenuItem(restaurantId, request)
+                } else {
+                    repository.updateMenuItem(restaurantId, id, request)
+                }
+                
+                if (result is Resource.Success) {
                     loadMenu()
                     onSuccess()
                 }
-            } catch (e: Exception) {
-                // Error handling
-            } finally {
-                _isSaving.value = false
             }
+            _isSaving.value = false
         }
     }
 
     fun deleteMenuItem(menuId: Int) {
         viewModelScope.launch {
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    repository.deleteMenuItem(ridString.toInt(), menuId)
-                    loadMenu()
-                }
-            } catch (e: Exception) {
-                // Error handling
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                repository.deleteMenuItem(ridString.toInt(), menuId)
+                loadMenu()
             }
         }
     }
 
     fun toggleAvailability(item: MenuItem) {
         viewModelScope.launch {
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val restaurantId = ridString.toInt()
-                    val request = MenuRequest(
-                        name = item.name,
-                        description = item.description,
-                        category = item.category,
-                        image = item.image,
-                        price = item.price,
-                        isAvailable = !item.isAvailable
-                    )
-                    repository.updateMenuItem(restaurantId, item.id, request)
-                    loadMenu()
-                }
-            } catch (e: Exception) {
-                // Error handling
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                val restaurantId = ridString.toInt()
+                val request = MenuRequest(
+                    name = item.name,
+                    description = item.description,
+                    category = item.category,
+                    image = item.image,
+                    price = item.price,
+                    isAvailable = !item.isAvailable
+                )
+                repository.updateMenuItem(restaurantId, item.id, request)
+                loadMenu()
             }
         }
     }
 
     fun uploadImage(uri: Uri, onResult: (String?) -> Unit) {
         viewModelScope.launch {
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val file = uriToFile(uri)
-                    val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                    val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-                    val response = repository.uploadMenuImage(ridString.toInt(), body)
-                    onResult(response.upload.publicUrl)
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                val file = uriToFile(uri)
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+                val result = repository.uploadMenuImage(ridString.toInt(), body)
+                if (result is Resource.Success) {
+                    onResult(result.data.upload.publicUrl)
+                } else {
+                    onResult(null)
                 }
-            } catch (e: Exception) {
-                onResult(null)
             }
         }
     }
 
     private fun uriToFile(uri: Uri): File {
-        val inputStream = getApplication<Application>().contentResolver.openInputStream(uri)
-        val file = File(getApplication<Application>().cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+        val inputStream = application.contentResolver.openInputStream(uri)
+        val file = File(application.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
         val outputStream = FileOutputStream(file)
         inputStream?.copyTo(outputStream)
         inputStream?.close()

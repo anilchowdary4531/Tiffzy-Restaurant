@@ -1,18 +1,19 @@
 package com.tiffzy.restaurant.ui.restaurant
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tiffzy.restaurant.data.local.AuthDataStore
+import com.tiffzy.restaurant.core.base.BaseViewModel
+import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.local.SessionManager
 import com.tiffzy.restaurant.data.model.AnalyticsResponse
 import com.tiffzy.restaurant.data.model.RestaurantSettings
-import com.tiffzy.restaurant.data.remote.RetrofitClient
 import com.tiffzy.restaurant.data.repository.RestaurantRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class DashboardUiState {
     object Idle : DashboardUiState()
@@ -24,51 +25,62 @@ sealed class DashboardUiState {
     data class Error(val message: String) : DashboardUiState()
 }
 
-class RestaurantDashboardViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = RestaurantRepository(RetrofitClient.apiService)
-    private val authDataStore = AuthDataStore(application)
+@HiltViewModel
+class RestaurantDashboardViewModel @Inject constructor(
+    private val repository: RestaurantRepository,
+    private val sessionManager: SessionManager
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Idle)
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    init {
+        loadDashboard()
+    }
+
     fun loadDashboard() {
         viewModelScope.launch {
             _uiState.value = DashboardUiState.Loading
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val restaurantId = ridString.toInt()
-                    // Fetch both analytics and settings in parallel
-                    val analytics = repository.getRestaurantAnalytics(restaurantId, "24h")
-                    val settingsResponse = repository.getRestaurantSettings(restaurantId)
-                    _uiState.value = DashboardUiState.Success(analytics, settingsResponse.restaurant)
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                val restaurantId = ridString.toInt()
+                
+                val analyticsResource = repository.getRestaurantAnalytics(restaurantId, "24h")
+                val settingsResource = repository.getRestaurantSettings(restaurantId)
+
+                if (analyticsResource is Resource.Success && settingsResource is Resource.Success) {
+                    _uiState.value = DashboardUiState.Success(
+                        analyticsResource.data,
+                        settingsResource.data.restaurant
+                    )
                 } else {
-                    _uiState.value = DashboardUiState.Error("Unauthorized: No restaurant linked to this account.")
+                    val errorMsg = when {
+                        analyticsResource is Resource.Error -> analyticsResource.message
+                        settingsResource is Resource.Error -> settingsResource.message
+                        else -> "Failed to load dashboard data"
+                    }
+                    _uiState.value = DashboardUiState.Error(errorMsg)
                 }
-            } catch (e: Exception) {
-                _uiState.value = DashboardUiState.Error(e.message ?: "Failed to load dashboard")
+            } else {
+                _uiState.value = DashboardUiState.Error("Unauthorized: No restaurant linked to this account.")
             }
         }
     }
 
     fun logout(onLoggedOut: () -> Unit) {
         viewModelScope.launch {
-            authDataStore.clearAuth()
+            sessionManager.logout()
             onLoggedOut()
         }
     }
 
     fun toggleRestaurantStatus(currentIsActive: Boolean) {
         viewModelScope.launch {
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val restaurantId = ridString.toInt()
-                    repository.updateRestaurantStatus(restaurantId, !currentIsActive)
-                    loadDashboard() // Refresh dashboard data
-                }
-            } catch (e: Exception) {
-                // Error handling
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                val restaurantId = ridString.toInt()
+                repository.updateRestaurantSettings(restaurantId, com.tiffzy.restaurant.data.model.RestaurantSettingsUpdateRequest(isActive = !currentIsActive))
+                loadDashboard()
             }
         }
     }

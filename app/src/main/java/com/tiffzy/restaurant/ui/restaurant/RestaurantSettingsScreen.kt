@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.tiffzy.restaurant.data.model.RestaurantSettings
 import com.tiffzy.restaurant.data.model.RestaurantSettingsUpdateRequest
 import com.tiffzy.restaurant.ui.components.TiffzyErrorState
@@ -33,7 +33,7 @@ import com.tiffzy.restaurant.ui.theme.Dimens
 fun RestaurantSettingsScreen(
     onBack: () -> Unit,
     onLogout: () -> Unit,
-    viewModel: RestaurantSettingsViewModel = viewModel()
+    viewModel: RestaurantSettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()

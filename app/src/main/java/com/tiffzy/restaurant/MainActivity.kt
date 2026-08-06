@@ -22,6 +22,9 @@ import com.razorpay.PaymentResultWithDataListener
 import com.tiffzy.restaurant.navigation.NavGraph
 import com.tiffzy.restaurant.ui.theme.TiffzyAppTheme
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     
     private var navController: NavHostController? = null

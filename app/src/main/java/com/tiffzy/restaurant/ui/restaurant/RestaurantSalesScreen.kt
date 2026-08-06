@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.tiffzy.restaurant.data.model.AnalyticsResponse
 import com.tiffzy.restaurant.ui.components.TiffzyErrorState
 import com.tiffzy.restaurant.ui.components.TiffzyLoadingIndicator
@@ -31,7 +31,7 @@ import com.tiffzy.restaurant.ui.theme.Dimens
 @Composable
 fun RestaurantSalesScreen(
     onBack: () -> Unit,
-    viewModel: RestaurantSalesViewModel = viewModel()
+    viewModel: RestaurantSalesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentRange by viewModel.currentRange.collectAsState()

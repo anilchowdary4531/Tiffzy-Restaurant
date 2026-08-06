@@ -1,18 +1,21 @@
 package com.tiffzy.restaurant.ui.restaurant
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tiffzy.restaurant.data.local.AuthDataStore
+import com.tiffzy.restaurant.BuildConfig
+import com.tiffzy.restaurant.core.base.BaseViewModel
+import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.local.SessionManager
 import com.tiffzy.restaurant.data.model.OrderDetails
 import com.tiffzy.restaurant.data.remote.RestaurantSocketManager
-import com.tiffzy.restaurant.data.remote.RetrofitClient
 import com.tiffzy.restaurant.data.repository.RestaurantRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class RestaurantOrdersUiState {
     object Loading : RestaurantOrdersUiState()
@@ -20,10 +23,13 @@ sealed class RestaurantOrdersUiState {
     data class Error(val message: String) : RestaurantOrdersUiState()
 }
 
-class RestaurantOrdersViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = RestaurantRepository(RetrofitClient.apiService)
-    private val authDataStore = AuthDataStore(application)
-    private val socketManager = RestaurantSocketManager.getInstance()
+@HiltViewModel
+class RestaurantOrdersViewModel @Inject constructor(
+    private val application: Application,
+    private val repository: RestaurantRepository,
+    private val sessionManager: SessionManager,
+    private val socketManager: RestaurantSocketManager
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow<RestaurantOrdersUiState>(RestaurantOrdersUiState.Loading)
     val uiState: StateFlow<RestaurantOrdersUiState> = _uiState.asStateFlow()
@@ -37,21 +43,25 @@ class RestaurantOrdersViewModel(application: Application) : AndroidViewModel(app
 
     fun loadOrders(status: String? = null) {
         viewModelScope.launch {
-            try {
-                val response = repository.getLiveOrders(status)
-                _ordersList.value = response.orders
-                _uiState.value = RestaurantOrdersUiState.Success(_ordersList.value)
-            } catch (e: Exception) {
-                _uiState.value = RestaurantOrdersUiState.Error(e.message ?: "Failed to fetch orders")
+            _uiState.value = RestaurantOrdersUiState.Loading
+            when (val result = repository.getLiveOrders(status)) {
+                is Resource.Success -> {
+                    _ordersList.value = result.data.orders
+                    _uiState.value = RestaurantOrdersUiState.Success(_ordersList.value)
+                }
+                is Resource.Error -> {
+                    _uiState.value = RestaurantOrdersUiState.Error(result.message)
+                }
+                else -> {}
             }
         }
     }
 
     private fun connectSocket() {
         viewModelScope.launch {
-            val token = authDataStore.authToken.first()
+            val token = sessionManager.authToken.first()
             if (token != null) {
-                socketManager.connect(getApplication(), RetrofitClient.BASE_URL, token) { updatedOrder ->
+                socketManager.connect(application, BuildConfig.BASE_URL, token) { updatedOrder ->
                     updateOrderInList(updatedOrder)
                 }
             }
@@ -64,7 +74,6 @@ class RestaurantOrdersViewModel(application: Application) : AndroidViewModel(app
         if (index != -1) {
             current[index] = updatedOrder
         } else {
-            // New order - add to the top
             current.add(0, updatedOrder)
         }
         _ordersList.value = current
@@ -73,11 +82,11 @@ class RestaurantOrdersViewModel(application: Application) : AndroidViewModel(app
 
     fun updateStatus(orderId: Int, nextStatus: String) {
         viewModelScope.launch {
-            try {
-                val response = repository.updateOrderStatus(orderId, nextStatus)
-                updateOrderInList(response.order)
-            } catch (e: Exception) {
-                // Could notify error
+            when (val result = repository.updateOrderStatus(orderId, nextStatus)) {
+                is Resource.Success -> {
+                    updateOrderInList(result.data.order)
+                }
+                else -> {}
             }
         }
     }

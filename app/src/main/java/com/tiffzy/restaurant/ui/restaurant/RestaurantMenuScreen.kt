@@ -19,7 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.tiffzy.restaurant.data.model.MenuItem
 import com.tiffzy.restaurant.ui.components.TiffzyEmptyState
@@ -34,7 +34,7 @@ fun RestaurantMenuScreen(
     onAddItem: () -> Unit,
     onEditItem: (MenuItem) -> Unit,
     onBack: () -> Unit,
-    viewModel: RestaurantMenuViewModel = viewModel()
+    viewModel: RestaurantMenuViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var itemToDelete by remember { mutableStateOf<MenuItem?>(null) }

@@ -25,11 +25,9 @@ fun SplashScreen(
     onNavigateToRestaurantDashboard: () -> Unit
 ) {
     LaunchedEffect(Unit) {
-        delay(800) // Reduced delay for smoother transition
+        delay(800)
         if (viewModel.checkAuthStatus()) {
-            val accountType = com.tiffzy.restaurant.data.local.AuthDataStore(
-                com.tiffzy.restaurant.MainActivity.getInstance()?.applicationContext ?: return@LaunchedEffect
-            ).accountType.first()
+            val accountType = viewModel.getAccountType()
             
             if (accountType == "staff") {
                 onNavigateToRestaurantDashboard()

@@ -1,17 +1,18 @@
 package com.tiffzy.restaurant.ui.restaurant
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tiffzy.restaurant.data.local.AuthDataStore
+import com.tiffzy.restaurant.core.base.BaseViewModel
+import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.local.SessionManager
 import com.tiffzy.restaurant.data.model.OrderDetails
-import com.tiffzy.restaurant.data.remote.RetrofitClient
 import com.tiffzy.restaurant.data.repository.RestaurantRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class OrderHistoryUiState {
     object Loading : OrderHistoryUiState()
@@ -19,9 +20,11 @@ sealed class OrderHistoryUiState {
     data class Error(val message: String) : OrderHistoryUiState()
 }
 
-class RestaurantOrderHistoryViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = RestaurantRepository(RetrofitClient.apiService)
-    private val authDataStore = AuthDataStore(application)
+@HiltViewModel
+class RestaurantOrderHistoryViewModel @Inject constructor(
+    private val repository: RestaurantRepository,
+    private val sessionManager: SessionManager
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow<OrderHistoryUiState>(OrderHistoryUiState.Loading)
     val uiState: StateFlow<OrderHistoryUiState> = _uiState.asStateFlow()
@@ -29,25 +32,32 @@ class RestaurantOrderHistoryViewModel(application: Application) : AndroidViewMod
     private val _currentStatusFilter = MutableStateFlow<String?>(null)
     val currentStatusFilter: StateFlow<String?> = _currentStatusFilter.asStateFlow()
 
+    init {
+        loadHistory()
+    }
+
     fun loadHistory(status: String? = null, query: String? = null) {
         _currentStatusFilter.value = status
         viewModelScope.launch {
             _uiState.value = OrderHistoryUiState.Loading
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val restaurantId = ridString.toInt()
-                    val response = repository.getOwnerOrders(
-                        restaurantId = restaurantId,
-                        status = status,
-                        query = query
-                    )
-                    _uiState.value = OrderHistoryUiState.Success(response.orders)
-                } else {
-                    _uiState.value = OrderHistoryUiState.Error("Unauthorized")
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                val restaurantId = ridString.toInt()
+                when (val result = repository.getOwnerOrders(
+                    restaurantId = restaurantId,
+                    status = status,
+                    query = query
+                )) {
+                    is Resource.Success -> {
+                        _uiState.value = OrderHistoryUiState.Success(result.data.orders)
+                    }
+                    is Resource.Error -> {
+                        _uiState.value = OrderHistoryUiState.Error(result.message)
+                    }
+                    else -> {}
                 }
-            } catch (e: Exception) {
-                _uiState.value = OrderHistoryUiState.Error(e.message ?: "Failed to load history")
+            } else {
+                _uiState.value = OrderHistoryUiState.Error("Unauthorized")
             }
         }
     }

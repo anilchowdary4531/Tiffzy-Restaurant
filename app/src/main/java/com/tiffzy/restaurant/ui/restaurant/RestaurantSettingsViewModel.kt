@@ -1,18 +1,19 @@
 package com.tiffzy.restaurant.ui.restaurant
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tiffzy.restaurant.data.local.AuthDataStore
+import com.tiffzy.restaurant.core.base.BaseViewModel
+import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.local.SessionManager
 import com.tiffzy.restaurant.data.model.RestaurantSettings
 import com.tiffzy.restaurant.data.model.RestaurantSettingsUpdateRequest
-import com.tiffzy.restaurant.data.remote.RetrofitClient
 import com.tiffzy.restaurant.data.repository.RestaurantRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class SettingsUiState {
     object Idle : SettingsUiState()
@@ -21,9 +22,11 @@ sealed class SettingsUiState {
     data class Error(val message: String) : SettingsUiState()
 }
 
-class RestaurantSettingsViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = RestaurantRepository(RetrofitClient.apiService)
-    private val authDataStore = AuthDataStore(application)
+@HiltViewModel
+class RestaurantSettingsViewModel @Inject constructor(
+    private val repository: RestaurantRepository,
+    private val sessionManager: SessionManager
+) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow<SettingsUiState>(SettingsUiState.Idle)
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -31,19 +34,26 @@ class RestaurantSettingsViewModel(application: Application) : AndroidViewModel(a
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
+    init {
+        loadSettings()
+    }
+
     fun loadSettings() {
         viewModelScope.launch {
             _uiState.value = SettingsUiState.Loading
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    val response = repository.getRestaurantSettings(ridString.toInt())
-                    _uiState.value = SettingsUiState.Success(response.restaurant)
-                } else {
-                    _uiState.value = SettingsUiState.Error("Unauthorized")
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                when (val result = repository.getRestaurantSettings(ridString.toInt())) {
+                    is Resource.Success -> {
+                        _uiState.value = SettingsUiState.Success(result.data.restaurant)
+                    }
+                    is Resource.Error -> {
+                        _uiState.value = SettingsUiState.Error(result.message)
+                    }
+                    else -> {}
                 }
-            } catch (e: Exception) {
-                _uiState.value = SettingsUiState.Error(e.message ?: "Failed to load settings")
+            } else {
+                _uiState.value = SettingsUiState.Error("Unauthorized")
             }
         }
     }
@@ -51,24 +61,21 @@ class RestaurantSettingsViewModel(application: Application) : AndroidViewModel(a
     fun updateSettings(request: RestaurantSettingsUpdateRequest, onSuccess: () -> Unit) {
         viewModelScope.launch {
             _isSaving.value = true
-            try {
-                val ridString = authDataStore.restaurantId.first()
-                if (ridString != null) {
-                    repository.updateRestaurantSettings(ridString.toInt(), request)
+            val ridString = sessionManager.restaurantId.first()
+            if (ridString != null) {
+                val result = repository.updateRestaurantSettings(ridString.toInt(), request)
+                if (result is Resource.Success) {
                     loadSettings()
                     onSuccess()
                 }
-            } catch (e: Exception) {
-                // Handle error
-            } finally {
-                _isSaving.value = false
             }
+            _isSaving.value = false
         }
     }
 
     fun logout(onLoggedOut: () -> Unit) {
         viewModelScope.launch {
-            authDataStore.clearAuth()
+            sessionManager.logout()
             onLoggedOut()
         }
     }

@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.tiffzy.restaurant.data.model.OrderDetails
 import com.tiffzy.restaurant.ui.components.*
 import com.tiffzy.restaurant.ui.theme.Dimens
@@ -28,7 +28,7 @@ import java.util.*
 @Composable
 fun RestaurantOrdersScreen(
     onOrderClick: (Int) -> Unit,
-    viewModel: RestaurantOrdersViewModel = viewModel()
+    viewModel: RestaurantOrdersViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

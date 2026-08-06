@@ -1,107 +1,72 @@
 package com.tiffzy.restaurant.navigation
 
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.tiffzy.restaurant.ui.auth.AuthViewModel
 import com.tiffzy.restaurant.ui.auth.LoginScreen
 import com.tiffzy.restaurant.ui.auth.OtpScreen
 import com.tiffzy.restaurant.ui.auth.SplashScreen
-import com.tiffzy.restaurant.ui.restaurant.AddEditMenuItemScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantDashboardScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantDashboardViewModel
-import com.tiffzy.restaurant.ui.restaurant.RestaurantMenuScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantMenuViewModel
-import com.tiffzy.restaurant.ui.restaurant.RestaurantOrderDetailScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantOrderHistoryScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantOrdersScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantOrdersViewModel
-import com.tiffzy.restaurant.ui.restaurant.RestaurantSalesScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantSalesViewModel
-import com.tiffzy.restaurant.ui.restaurant.RestaurantSettingsScreen
-import com.tiffzy.restaurant.ui.restaurant.RestaurantSettingsViewModel
-import com.tiffzy.restaurant.ui.restaurant.MenuUiState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
-
-object Routes {
-    const val Splash = "splash"
-    const val Login = "login"
-    const val Otp = "otp"
-    const val RestaurantDashboard = "restaurant_dashboard"
-    const val RestaurantOrders = "restaurant_orders"
-    const val RestaurantMenu = "restaurant_menu"
-    const val RestaurantSales = "restaurant_sales"
-    const val RestaurantSettings = "restaurant_settings"
-    const val RestaurantHistory = "restaurant_history"
-    const val RestaurantOrderDetail = "restaurant_order_detail/{orderId}"
-    const val RestaurantAddMenuItem = "restaurant_add_menu_item"
-    const val RestaurantEditMenuItem = "restaurant_edit_menu_item/{menuId}"
-    
-    fun restaurantOrderDetail(orderId: Int) = "restaurant_order_detail/$orderId"
-    fun restaurantEditMenuItem(menuId: Int) = "restaurant_edit_menu_item/$menuId"
-}
+import com.tiffzy.restaurant.ui.restaurant.*
 
 @Composable
 fun NavGraph(
     navController: NavHostController = rememberNavController(),
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash
+        startDestination = Screen.Splash.route
     ) {
-        composable(Routes.Splash) {
+        composable(Screen.Splash.route) {
             SplashScreen(
                 viewModel = authViewModel,
                 onNavigateToHome = {
-                    // In Restaurant app, "Home" is the Dashboard
-                    navController.navigate(Routes.RestaurantDashboard) {
-                        popUpTo(Routes.Splash) { inclusive = true }
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
                 onNavigateToLogin = {
-                    navController.navigate(Routes.Login) {
-                        popUpTo(Routes.Splash) { inclusive = true }
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
                 onNavigateToRestaurantDashboard = {
-                    navController.navigate(Routes.RestaurantDashboard) {
-                        popUpTo(Routes.Splash) { inclusive = true }
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(Routes.Login) {
+        composable(Screen.Login.route) {
             LoginScreen(
                 viewModel = authViewModel,
                 onOtpSent = {
-                    navController.navigate(Routes.Otp)
+                    navController.navigate(Screen.Otp.route)
                 },
                 onStaffLoggedIn = {
-                    navController.navigate(Routes.RestaurantDashboard) {
-                        popUpTo(Routes.Login) { inclusive = true }
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(Routes.Otp) {
+        composable(Screen.Otp.route) {
             OtpScreen(
                 viewModel = authViewModel,
                 onAuthenticated = {
-                    // Logic to check if user is staff should be in ViewModel or handled here
-                    navController.navigate(Routes.RestaurantDashboard) {
-                        popUpTo(Routes.Login) { inclusive = true }
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
                 onBack = {
@@ -111,114 +76,120 @@ fun NavGraph(
             )
         }
 
-        composable(Routes.RestaurantDashboard) {
+        composable(Screen.Dashboard.route) {
             RestaurantDashboardScreen(
                 onLogout = {
-                    navController.navigate(Routes.Login) {
+                    navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
                 onOrdersClick = {
-                    navController.navigate(Routes.RestaurantOrders)
+                    navController.navigate(Screen.Orders.route)
                 },
                 onMenuClick = {
-                    navController.navigate(Routes.RestaurantMenu)
+                    navController.navigate(Screen.Menu.route)
                 },
                 onSalesClick = {
-                    navController.navigate(Routes.RestaurantSales)
+                    navController.navigate(Screen.Sales.route)
                 },
                 onHistoryClick = {
-                    navController.navigate(Routes.RestaurantHistory)
+                    navController.navigate(Screen.History.route)
                 },
                 onSettingsClick = {
-                    navController.navigate(Routes.RestaurantSettings)
+                    navController.navigate(Screen.Settings.route)
                 }
             )
         }
 
-        composable(Routes.RestaurantOrders) {
-            val restaurantOrdersViewModel: RestaurantOrdersViewModel = viewModel()
+        composable(Screen.Orders.route) {
+            val viewModel: RestaurantOrdersViewModel = hiltViewModel()
             RestaurantOrdersScreen(
                 onOrderClick = { orderId ->
-                    navController.navigate(Routes.restaurantOrderDetail(orderId))
+                    navController.navigate(Screen.OrderDetail.createRoute(orderId))
                 },
-                viewModel = restaurantOrdersViewModel
+                viewModel = viewModel
             )
         }
 
-        composable(Routes.RestaurantHistory) {
+        composable(Screen.History.route) {
+            val viewModel: RestaurantOrderHistoryViewModel = hiltViewModel()
             RestaurantOrderHistoryScreen(
                 onOrderClick = { orderId ->
-                    navController.navigate(Routes.restaurantOrderDetail(orderId))
+                    navController.navigate(Screen.OrderDetail.createRoute(orderId))
                 },
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel
             )
         }
 
         composable(
-            route = Routes.RestaurantOrderDetail,
+            route = Screen.OrderDetail.route,
             arguments = listOf(navArgument("orderId") { type = NavType.IntType }),
             deepLinks = listOf(navDeepLink { uriPattern = "tiffzy://restaurant/order/{orderId}" })
         ) { backStackEntry ->
             val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
-            val restaurantOrdersViewModel: RestaurantOrdersViewModel = viewModel()
+            val viewModel: RestaurantOrdersViewModel = hiltViewModel()
             RestaurantOrderDetailScreen(
                 orderId = orderId,
                 onBack = { navController.popBackStack() },
-                viewModel = restaurantOrdersViewModel
+                viewModel = viewModel
             )
         }
 
-        composable(Routes.RestaurantMenu) {
-            val restaurantMenuViewModel: RestaurantMenuViewModel = viewModel()
+        composable(Screen.Menu.route) {
+            val viewModel: RestaurantMenuViewModel = hiltViewModel()
             RestaurantMenuScreen(
-                onAddItem = { navController.navigate(Routes.RestaurantAddMenuItem) },
+                onAddItem = { navController.navigate(Screen.AddMenuItem.route) },
                 onEditItem = { item ->
-                    navController.navigate(Routes.restaurantEditMenuItem(item.id))
+                    navController.navigate(Screen.EditMenuItem.createRoute(item.id))
                 },
                 onBack = { navController.popBackStack() },
-                viewModel = restaurantMenuViewModel
+                viewModel = viewModel
             )
         }
 
-        composable(Routes.RestaurantAddMenuItem) {
-            val restaurantMenuViewModel: RestaurantMenuViewModel = viewModel()
+        composable(Screen.AddMenuItem.route) {
+            val viewModel: RestaurantMenuViewModel = hiltViewModel()
             AddEditMenuItemScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = restaurantMenuViewModel
+                viewModel = viewModel
             )
         }
 
         composable(
-            route = Routes.RestaurantEditMenuItem,
+            route = Screen.EditMenuItem.route,
             arguments = listOf(navArgument("menuId") { type = NavType.IntType })
         ) { backStackEntry ->
             val menuId = backStackEntry.arguments?.getInt("menuId") ?: 0
-            val restaurantMenuViewModel: RestaurantMenuViewModel = viewModel()
-            val uiState by restaurantMenuViewModel.uiState.collectAsState()
+            val viewModel: RestaurantMenuViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsState()
             val menuItem = (uiState as? MenuUiState.Success)?.menu?.find { it.id == menuId }
             
             AddEditMenuItemScreen(
                 menuItem = menuItem,
                 onBack = { navController.popBackStack() },
-                viewModel = restaurantMenuViewModel
+                viewModel = viewModel
             )
         }
 
-        composable(Routes.RestaurantSales) {
+        composable(Screen.Sales.route) {
+            val viewModel: RestaurantSalesViewModel = hiltViewModel()
             RestaurantSalesScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel
             )
         }
 
-        composable(Routes.RestaurantSettings) {
+        composable(Screen.Settings.route) {
+            val viewModel: RestaurantSettingsViewModel = hiltViewModel()
             RestaurantSettingsScreen(
                 onBack = { navController.popBackStack() },
                 onLogout = {
-                    navController.navigate(Routes.Login) {
+                    navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                viewModel = viewModel
             )
         }
     }

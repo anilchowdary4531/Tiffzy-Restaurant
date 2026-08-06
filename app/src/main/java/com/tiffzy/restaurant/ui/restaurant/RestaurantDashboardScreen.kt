@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.tiffzy.restaurant.data.model.AnalyticsResponse
 import com.tiffzy.restaurant.data.model.RestaurantSettings
 import com.tiffzy.restaurant.ui.components.TiffzyErrorState
@@ -36,7 +36,7 @@ fun RestaurantDashboardScreen(
     onSalesClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    viewModel: RestaurantDashboardViewModel = viewModel()
+    viewModel: RestaurantDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

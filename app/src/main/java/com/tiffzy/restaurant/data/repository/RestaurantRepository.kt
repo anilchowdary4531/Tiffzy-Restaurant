@@ -1,119 +1,84 @@
 package com.tiffzy.restaurant.data.repository
 
+import com.tiffzy.restaurant.core.base.BaseRepository
+import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.local.dao.MenuItemDao
+import com.tiffzy.restaurant.data.local.entities.toDomain
+import com.tiffzy.restaurant.data.local.entities.toEntity
 import com.tiffzy.restaurant.data.model.*
 import com.tiffzy.restaurant.data.remote.ApiService
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class RestaurantRepository(private val apiService: ApiService) {
-
-    suspend fun checkHealth(): HealthResponse {
-        return apiService.checkHealth()
+@Singleton
+class RestaurantRepository @Inject constructor(
+    private val apiService: ApiService,
+    private val menuItemDao: MenuItemDao
+) : BaseRepository() {
+    
+    fun getCachedMenu(restaurantId: Int): Flow<List<MenuItem>> {
+        return menuItemDao.getMenuItems(restaurantId).map { entities ->
+            entities.map { it.toDomain() }
+        }
     }
 
-    suspend fun getRestaurants(): List<Restaurant> {
-        return apiService.getRestaurants()
+    suspend fun refreshMenu(restaurantId: Int): Resource<List<MenuItem>> {
+        val result = safeApiCall { apiService.getOwnerMenu(restaurantId) }
+        if (result is Resource.Success) {
+            menuItemDao.clearMenu(restaurantId)
+            menuItemDao.insertAll(result.data.map { it.toEntity() })
+        }
+        return result
     }
 
-    suspend fun searchCatalog(query: String): SearchResponse {
-        return apiService.searchCatalog(query)
+    suspend fun getRestaurantDashboard(restaurantId: Int): Resource<RestaurantDashboardResponse> {
+        return safeApiCall { apiService.getRestaurantDashboard(restaurantId) }
     }
 
-    suspend fun getRestaurantMenu(slug: String): RestaurantMenuResponse {
-        return apiService.getRestaurantMenu(slug)
+    suspend fun getRestaurantAnalytics(restaurantId: Int, range: String = "24h"): Resource<AnalyticsResponse> {
+        return safeApiCall { apiService.getRestaurantAnalytics(restaurantId, range) }
     }
 
-    suspend fun getAddresses(): AddressListResponse {
-        return apiService.getAddresses()
+    suspend fun getRestaurantSettings(restaurantId: Int): Resource<RestaurantSettingsResponse> {
+        return safeApiCall { apiService.getRestaurantSettings(restaurantId) }
     }
 
-    suspend fun placeOrder(slug: String, request: OrderRequest): OrderResponse {
-        return apiService.placeOrder(slug, request)
+    suspend fun updateRestaurantSettings(restaurantId: Int, request: RestaurantSettingsUpdateRequest): Resource<RestaurantSettingsResponse> {
+        return safeApiCall { apiService.updateRestaurantSettings(restaurantId, request) }
     }
 
-    suspend fun createPayment(request: CreatePaymentRequest): CreatePaymentResponse {
-        return apiService.createPayment(request)
+    suspend fun getLiveOrders(status: String? = null): Resource<LiveOrdersResponse> {
+        return safeApiCall { apiService.getLiveOrders(status) }
     }
 
-    suspend fun verifyPayment(request: VerifyPaymentRequest): VerifyPaymentResponse {
-        return apiService.verifyPayment(request)
-    }
-
-    suspend fun getCustomerOrders(phone: String): CustomerOrderGroupsResponse {
-        return apiService.getCustomerOrders(phone)
-    }
-
-    suspend fun getProfile(): CustomerProfileResponse {
-        return apiService.getProfile()
-    }
-
-    suspend fun updateProfile(name: String?, email: String?): CustomerProfileResponse {
-        return apiService.updateProfile(UpdateProfileRequest(name, email))
-    }
-
-    suspend fun createAddress(request: CreateAddressRequest): Address {
-        return apiService.createAddress(request)
-    }
-
-    suspend fun deleteAddress(id: Int) {
-        apiService.deleteAddress(id)
-    }
-
-    // Restaurant Management
-    suspend fun getRestaurantDashboard(restaurantId: Int): RestaurantDashboardResponse {
-        return apiService.getRestaurantDashboard(restaurantId)
-    }
-
-    suspend fun getRestaurantAnalytics(restaurantId: Int, range: String = "24h"): AnalyticsResponse {
-        return apiService.getRestaurantAnalytics(restaurantId, range)
-    }
-
-    suspend fun getRestaurantSettings(restaurantId: Int): RestaurantSettingsResponse {
-        return apiService.getRestaurantSettings(restaurantId)
-    }
-
-    suspend fun updateRestaurantSettings(restaurantId: Int, request: RestaurantSettingsUpdateRequest): RestaurantSettingsResponse {
-        return apiService.updateRestaurantSettings(restaurantId, request)
-    }
-
-    suspend fun updateRestaurantStatus(restaurantId: Int, isActive: Boolean): RestaurantSettingsResponse {
-        return apiService.updateRestaurantSettings(restaurantId, RestaurantSettingsUpdateRequest(isActive = isActive))
-    }
-
-    suspend fun getLiveOrders(status: String? = null): LiveOrdersResponse {
-        return apiService.getLiveOrders(status)
+    suspend fun updateOrderStatus(orderId: Int, status: String, notes: String? = null): Resource<OrderResponse> {
+        return safeApiCall { apiService.updateOrderStatus(orderId, UpdateOrderStatusRequest(status, notes)) }
     }
 
     suspend fun getOwnerOrders(
         restaurantId: Int,
         status: String? = null,
-        source: String? = null,
         query: String? = null
-    ): OwnerOrdersResponse {
-        return apiService.getOwnerOrders(restaurantId, status, source, query)
+    ): Resource<OwnerOrdersResponse> {
+        return safeApiCall { apiService.getOwnerOrders(restaurantId, status, null, query) }
     }
 
-    suspend fun updateOrderStatus(orderId: Int, status: String, notes: String? = null): OrderResponse {
-        return apiService.updateOrderStatus(orderId, UpdateOrderStatusRequest(status, notes))
+    suspend fun createMenuItem(restaurantId: Int, request: MenuRequest): Resource<MenuItem> {
+        return safeApiCall { apiService.createMenuItem(restaurantId, request) }
     }
 
-    // Menu Management
-    suspend fun getOwnerMenu(restaurantId: Int): List<MenuItem> {
-        return apiService.getOwnerMenu(restaurantId)
+    suspend fun updateMenuItem(restaurantId: Int, menuId: Int, request: MenuRequest): Resource<MenuItem> {
+        return safeApiCall { apiService.updateMenuItem(restaurantId, menuId, request) }
     }
 
-    suspend fun createMenuItem(restaurantId: Int, request: MenuRequest): MenuItem {
-        return apiService.createMenuItem(restaurantId, request)
+    suspend fun deleteMenuItem(restaurantId: Int, menuId: Int): Resource<DeleteResponse> {
+        return safeApiCall { apiService.deleteMenuItem(restaurantId, menuId) }
     }
 
-    suspend fun updateMenuItem(restaurantId: Int, menuId: Int, request: MenuRequest): MenuItem {
-        return apiService.updateMenuItem(restaurantId, menuId, request)
-    }
-
-    suspend fun deleteMenuItem(restaurantId: Int, menuId: Int): DeleteResponse {
-        return apiService.deleteMenuItem(restaurantId, menuId)
-    }
-
-    suspend fun uploadMenuImage(restaurantId: Int, file: MultipartBody.Part): MenuImageUploadResponse {
-        return apiService.uploadMenuImage(restaurantId, file)
+    suspend fun uploadMenuImage(restaurantId: Int, file: MultipartBody.Part): Resource<MenuImageUploadResponse> {
+        return safeApiCall { apiService.uploadMenuImage(restaurantId, file) }
     }
 }

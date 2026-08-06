@@ -21,7 +21,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.tiffzy.restaurant.data.model.MenuItem
 import com.tiffzy.restaurant.ui.components.TiffzyTopBar
@@ -32,7 +32,7 @@ import com.tiffzy.restaurant.ui.theme.Dimens
 fun AddEditMenuItemScreen(
     menuItem: MenuItem? = null,
     onBack: () -> Unit,
-    viewModel: RestaurantMenuViewModel = viewModel()
+    viewModel: RestaurantMenuViewModel = hiltViewModel()
 ) {
     var name by remember { mutableStateOf(menuItem?.name ?: "") }
     var description by remember { mutableStateOf(menuItem?.description ?: "") }
