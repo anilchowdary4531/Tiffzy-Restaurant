@@ -16,6 +16,9 @@ import com.tiffzy.restaurant.ui.home.HomeScreen
 import com.tiffzy.restaurant.ui.home.HomeViewModel
 import com.tiffzy.restaurant.ui.home.cart.CartScreen
 import com.tiffzy.restaurant.ui.home.cart.CartViewModel
+import com.tiffzy.restaurant.ui.home.address.AddressListScreen
+import com.tiffzy.restaurant.ui.home.address.AddAddressScreen
+import com.tiffzy.restaurant.ui.home.address.AddressViewModel
 import com.tiffzy.restaurant.ui.home.details.RestaurantDetailScreen
 import com.tiffzy.restaurant.ui.home.details.RestaurantDetailViewModel
 import com.tiffzy.restaurant.ui.restaurant.*
@@ -155,6 +158,24 @@ fun NavGraph(
                 onNavigateToCheckout = {
                     // navController.navigate(Screen.Checkout.route)
                 }
+            )
+        }
+
+        composable(Screen.AddressList.route) {
+            val addressViewModel: AddressViewModel = hiltViewModel()
+            AddressListScreen(
+                viewModel = addressViewModel,
+                onBack = { navController.popBackStack() },
+                onAddAddress = { navController.navigate(Screen.AddAddress.route) }
+            )
+        }
+
+        composable(Screen.AddAddress.route) {
+            val addressViewModel: AddressViewModel = hiltViewModel()
+            AddAddressScreen(
+                viewModel = addressViewModel,
+                onBack = { navController.popBackStack() },
+                onSuccess = { navController.popBackStack() }
             )
         }
 

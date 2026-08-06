@@ -35,6 +35,12 @@ interface ApiService {
     @POST("customer/address")
     suspend fun createAddress(@Body request: CreateAddressRequest): Address
 
+    @PUT("customer/address/{id}")
+    suspend fun updateAddress(@Path("id") id: Int, @Body request: CreateAddressRequest): Address
+
+    @PATCH("customer/address/{id}/default")
+    suspend fun setDefaultAddress(@Path("id") id: Int): GenericResponse
+
     @DELETE("customer/address/{id}")
     suspend fun deleteAddress(@Path("id") id: Int)
 
