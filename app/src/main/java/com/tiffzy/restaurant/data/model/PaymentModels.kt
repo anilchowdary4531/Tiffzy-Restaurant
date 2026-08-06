@@ -55,3 +55,25 @@ data class VerifyPaymentResponse(
     val verified: Boolean,
     val order: OrderDetails? = null
 )
+
+data class SavedCard(
+    val id: Int,
+    val cardBrand: String,
+    val last4: String,
+    val expiryMonth: Int,
+    val expiryYear: Int,
+    val holderName: String?
+)
+
+data class WalletHistoryResponse(
+    val balance: Double,
+    val transactions: List<WalletTransaction>
+)
+
+data class WalletTransaction(
+    val id: Int,
+    val amount: Double,
+    val type: String, // credit | debit
+    val description: String,
+    val createdAt: String
+)

@@ -30,6 +30,7 @@ data class Customer(
     val phone: String,
     val name: String?,
     val email: String?,
+    val image: String? = null,
     val walletBalance: Double = 0.0
 )
 
@@ -39,7 +40,8 @@ data class CustomerProfileResponse(
 
 data class UpdateProfileRequest(
     val name: String?,
-    val email: String?
+    val email: String?,
+    val image: String? = null
 )
 
 data class LoginRequest(

@@ -109,6 +109,19 @@ interface ApiService {
     @DELETE("customer/notifications/{id}")
     suspend fun deleteNotification(@Path("id") id: Int): GenericResponse
 
+    @DELETE("customer/account")
+    suspend fun deleteAccount(): GenericResponse
+
+    @Multipart
+    @POST("customer/profile/picture")
+    suspend fun uploadProfilePicture(@Part file: MultipartBody.Part): GenericResponse
+
+    @GET("customer/wallet/history")
+    suspend fun getWalletHistory(): WalletHistoryResponse
+
+    @GET("customer/cards")
+    suspend fun getSavedCards(): List<SavedCard>
+
     // Restaurant Management APIs
     @GET("owner/dashboard/{restaurantId}")
     suspend fun getRestaurantDashboard(@Path("restaurantId") restaurantId: Int): RestaurantDashboardResponse

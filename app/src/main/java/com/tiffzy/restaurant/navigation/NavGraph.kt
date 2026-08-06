@@ -27,6 +27,7 @@ import com.tiffzy.restaurant.ui.home.orders.OrderTrackingScreen
 import com.tiffzy.restaurant.ui.home.orders.OrderTrackingViewModel
 import com.tiffzy.restaurant.ui.home.notifications.NotificationListScreen
 import com.tiffzy.restaurant.ui.home.notifications.NotificationViewModel
+import com.tiffzy.restaurant.ui.home.profile.*
 import com.tiffzy.restaurant.ui.home.address.AddressListScreen
 import com.tiffzy.restaurant.ui.home.address.AddAddressScreen
 import com.tiffzy.restaurant.ui.home.address.AddressViewModel
@@ -69,6 +70,57 @@ fun NavGraph(
             )
         }
 
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
+        }
+
         composable(Screen.Onboarding.route) {
             OnboardingScreen(
                 onFinish = {
@@ -78,6 +130,57 @@ fun NavGraph(
                     }
                 }
             )
+        }
+
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
         }
 
         composable(Screen.Login.route) {
@@ -95,6 +198,57 @@ fun NavGraph(
             )
         }
 
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
+        }
+
         composable(Screen.Register.route) {
             RegisterScreen(
                 viewModel = authViewModel,
@@ -105,6 +259,57 @@ fun NavGraph(
                     }
                 }
             )
+        }
+
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
         }
 
         composable(Screen.OtpLogin.route) {
@@ -122,6 +327,57 @@ fun NavGraph(
             )
         }
 
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
+        }
+
         composable(Screen.ForgotPassword.route) {
             ForgotPasswordScreen(
                 viewModel = authViewModel,
@@ -137,6 +393,57 @@ fun NavGraph(
             )
         }
 
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
+        }
+
         composable(Screen.Home.route) {
             val homeViewModel: HomeViewModel = hiltViewModel()
             HomeScreen(
@@ -148,6 +455,57 @@ fun NavGraph(
                     navController.navigate(Screen.AddressList.route)
                 }
             )
+        }
+
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
         }
 
         composable(
@@ -164,6 +522,57 @@ fun NavGraph(
             )
         }
 
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
+        }
+
         composable(Screen.Cart.route) {
             val cartViewModel: CartViewModel = hiltViewModel()
             CartScreen(
@@ -173,6 +582,57 @@ fun NavGraph(
                     navController.navigate(Screen.Checkout.route)
                 }
             )
+        }
+
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
         }
 
         composable(Screen.Checkout.route) {
@@ -193,6 +653,57 @@ fun NavGraph(
                     }
                 }
             )
+        }
+
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
         }
 
         composable(
@@ -237,6 +748,57 @@ fun NavGraph(
             )
         }
 
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
+        }
+
         composable(Screen.OrderList.route) {
             val orderViewModel: OrderViewModel = hiltViewModel()
             OrderListScreen(
@@ -273,6 +835,57 @@ fun NavGraph(
                     }
                 }
             )
+        }
+
+        composable(Screen.Profile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                onSavedAddresses = { navController.navigate(Screen.AddressList.route) },
+                onOrders = { navController.navigate(Screen.OrderList.route) },
+                onWallet = { navController.navigate(Screen.Wallet.route) },
+                onSavedCards = { navController.navigate(Screen.SavedCards.route) },
+                onNotifications = { navController.navigate(Screen.Notifications.route) },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Wallet.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            WalletScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable(Screen.SavedCards.route) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            // Using a simple placeholder or implementing SavedCardsScreen
+            Scaffold(
+                topBar = {
+                    TopAppBar(title = { Text("Saved Cards") }, navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) }
+                    })
+                }
+            ) { padding ->
+                Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No saved cards found.")
+                }
+            }
         }
 
         composable(Screen.AddressList.route) {
