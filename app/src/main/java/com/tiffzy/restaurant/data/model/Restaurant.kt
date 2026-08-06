@@ -37,10 +37,14 @@ data class Restaurant(
 
 data class Review(
     val id: Int,
+    val userId: Int? = null,
     val userName: String,
     val userImage: String?,
     val rating: Double,
     val comment: String,
+    val images: List<String> = emptyList(),
+    val menuItemId: Int? = null,
+    val menuItemName: String? = null,
     val date: String
 )
 

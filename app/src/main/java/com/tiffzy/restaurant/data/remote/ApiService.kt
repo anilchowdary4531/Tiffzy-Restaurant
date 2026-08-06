@@ -122,6 +122,36 @@ interface ApiService {
     @GET("customer/cards")
     suspend fun getSavedCards(): List<SavedCard>
 
+    // Review APIs
+    @GET("restaurants/{slug}/reviews")
+    suspend fun getRestaurantReviews(
+        @Path("slug") slug: String,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): ReviewListResponse
+
+    @POST("restaurants/{slug}/reviews")
+    suspend fun addReview(
+        @Path("slug") slug: String,
+        @Body request: ReviewRequest
+    ): GenericResponse
+
+    @PUT("customer/reviews/{id}")
+    suspend fun updateReview(
+        @Path("id") id: Int,
+        @Body request: ReviewRequest
+    ): GenericResponse
+
+    @DELETE("customer/reviews/{id}")
+    suspend fun deleteReview(@Path("id") id: Int): GenericResponse
+
+    @Multipart
+    @POST("customer/reviews/{id}/images")
+    suspend fun uploadReviewImages(
+        @Path("id") id: Int,
+        @Part images: List<MultipartBody.Part>
+    ): GenericResponse
+
     // Restaurant Management APIs
     @GET("owner/dashboard/{restaurantId}")
     suspend fun getRestaurantDashboard(@Path("restaurantId") restaurantId: Int): RestaurantDashboardResponse

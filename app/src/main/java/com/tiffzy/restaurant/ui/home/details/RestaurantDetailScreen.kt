@@ -35,12 +35,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun RestaurantDetailScreen(
     viewModel: RestaurantDetailViewModel,
     onBack: () -> Unit,
-    onNavigateToCart: () -> Unit
+    onNavigateToCart: () -> Unit,
+    onSeeAllReviews: (String) -> Unit,
+    onWriteReview: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Menu", "Reviews", "Photos")
+    val slug = (uiState as? UiState.Success)?.data?.restaurant?.slug ?: ""
 
     Scaffold(
         topBar = {
@@ -103,7 +106,37 @@ fun RestaurantDetailScreen(
                 1 -> {
                     (uiState as? UiState.Success)?.let { state ->
                         Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Customer Reviews",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Button(
+                                    onClick = { onWriteReview(slug) },
+                                    modifier = Modifier.height(36.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                                ) {
+                                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Write", fontSize = 12.sp)
+                                }
+                            }
+                            Spacer(Modifier.height(16.dp))
                             state.data.reviews.forEach { ReviewItem(it) }
+                            
+                            if (state.data.reviews.size >= 3) {
+                                TextButton(
+                                    onClick = { onSeeAllReviews(slug) },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("See All Reviews")
+                                }
+                            }
                         }
                     }
                 }
@@ -142,10 +175,12 @@ fun RestaurantPhotos(images: List<String>) {
 @Composable
 fun RestaurantDetailContent(
     data: RestaurantDetailResponse,
+    onSeeAllReviews: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val restaurant = data.restaurant
     val scrollState = rememberScrollState()
+    val slug = restaurant.slug
 
     Column(
         modifier = modifier

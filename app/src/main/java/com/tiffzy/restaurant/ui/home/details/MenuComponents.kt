@@ -29,11 +29,13 @@ fun MenuItemCard(
     quantity: Int,
     onAdd: () -> Unit,
     onRemove: () -> Unit,
+    onItemClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable { onItemClick() }
             .padding(vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

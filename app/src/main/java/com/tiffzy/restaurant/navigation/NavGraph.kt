@@ -28,6 +28,9 @@ import com.tiffzy.restaurant.ui.home.orders.OrderTrackingViewModel
 import com.tiffzy.restaurant.ui.home.notifications.NotificationListScreen
 import com.tiffzy.restaurant.ui.home.notifications.NotificationViewModel
 import com.tiffzy.restaurant.ui.home.profile.*
+import com.tiffzy.restaurant.ui.home.reviews.ReviewListScreen
+import com.tiffzy.restaurant.ui.home.reviews.ReviewViewModel
+import com.tiffzy.restaurant.ui.home.reviews.WriteReviewScreen
 import com.tiffzy.restaurant.ui.home.address.AddressListScreen
 import com.tiffzy.restaurant.ui.home.address.AddAddressScreen
 import com.tiffzy.restaurant.ui.home.address.AddressViewModel
@@ -104,6 +107,36 @@ fun NavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
         
         composable(Screen.SavedCards.route) {
             val profileViewModel: ProfileViewModel = hiltViewModel()
@@ -163,6 +196,36 @@ fun NavGraph(
             val profileViewModel: ProfileViewModel = hiltViewModel()
             WalletScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -232,6 +295,36 @@ fun NavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
         
         composable(Screen.SavedCards.route) {
             val profileViewModel: ProfileViewModel = hiltViewModel()
@@ -292,6 +385,36 @@ fun NavGraph(
             val profileViewModel: ProfileViewModel = hiltViewModel()
             WalletScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -361,6 +484,36 @@ fun NavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
         
         composable(Screen.SavedCards.route) {
             val profileViewModel: ProfileViewModel = hiltViewModel()
@@ -424,6 +577,36 @@ fun NavGraph(
             val profileViewModel: ProfileViewModel = hiltViewModel()
             WalletScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -491,6 +674,36 @@ fun NavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
         
         composable(Screen.SavedCards.route) {
             val profileViewModel: ProfileViewModel = hiltViewModel()
@@ -518,6 +731,12 @@ fun NavGraph(
                 onBack = { navController.popBackStack() },
                 onNavigateToCart = {
                     navController.navigate(Screen.Cart.route)
+                },
+                onSeeAllReviews = { slug ->
+                    navController.navigate(Screen.ReviewList.createRoute(slug))
+                },
+                onWriteReview = { slug ->
+                    navController.navigate(Screen.WriteReview.createRoute(slug))
                 }
             )
         }
@@ -553,6 +772,36 @@ fun NavGraph(
             val profileViewModel: ProfileViewModel = hiltViewModel()
             WalletScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -615,6 +864,36 @@ fun NavGraph(
             val profileViewModel: ProfileViewModel = hiltViewModel()
             WalletScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -686,6 +965,36 @@ fun NavGraph(
             val profileViewModel: ProfileViewModel = hiltViewModel()
             WalletScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -782,6 +1091,36 @@ fun NavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
         
         composable(Screen.SavedCards.route) {
             val profileViewModel: ProfileViewModel = hiltViewModel()
@@ -868,6 +1207,36 @@ fun NavGraph(
             val profileViewModel: ProfileViewModel = hiltViewModel()
             WalletScreen(
                 viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReviewList.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            ReviewListScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
+                onWriteReview = { navController.navigate(Screen.WriteReview.createRoute(slug)) },
+                onEditReview = { review -> 
+                    // For now, let's just show a toast or navigate if we had an edit screen
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.WriteReview.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: ""
+            val reviewViewModel: ReviewViewModel = hiltViewModel()
+            WriteReviewScreen(
+                slug = slug,
+                viewModel = reviewViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

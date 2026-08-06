@@ -27,6 +27,12 @@ sealed class Screen(val route: String) {
     object EditProfile : Screen("edit_profile")
     object Wallet : Screen("wallet")
     object SavedCards : Screen("saved_cards")
+    object ReviewList : Screen("reviews/{slug}") {
+        fun createRoute(slug: String) = "reviews/$slug"
+    }
+    object WriteReview : Screen("write_review/{slug}") {
+        fun createRoute(slug: String) = "write_review/$slug"
+    }
     object Dashboard : Screen("restaurant_dashboard")
     object Orders : Screen("restaurant_orders")
     object Menu : Screen("restaurant_menu")
