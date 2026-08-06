@@ -2,8 +2,15 @@ package com.tiffzy.restaurant.navigation
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
+    object Onboarding : Screen("onboarding")
     object Login : Screen("login")
-    object Otp : Screen("otp")
+    object Register : Screen("register")
+    object OtpLogin : Screen("otp_login")
+    object ForgotPassword : Screen("forgot_password")
+    object Home : Screen("home")
+    object RestaurantDetail : Screen("restaurant_detail/{slug}") {
+        fun createRoute(slug: String) = "restaurant_detail/$slug"
+    }
     object Dashboard : Screen("restaurant_dashboard")
     object Orders : Screen("restaurant_orders")
     object Menu : Screen("restaurant_menu")

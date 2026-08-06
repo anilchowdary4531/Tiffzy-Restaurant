@@ -1,88 +1,67 @@
 package com.tiffzy.restaurant.data.repository
 
+import com.tiffzy.restaurant.data.model.Cart
 import com.tiffzy.restaurant.data.model.CartItem
-import com.tiffzy.restaurant.data.model.MenuItem
-import com.tiffzy.restaurant.data.model.Restaurant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CartRepository {
-    private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
-    val cartItems: StateFlow<List<CartItem>> = _cartItems.asStateFlow()
+@Singleton
+class CartRepository @Inject constructor() {
+    private val _cart = MutableStateFlow(Cart())
+    val cart: StateFlow<Cart> = _cart.asStateFlow()
 
-    private val _currentRestaurant = MutableStateFlow<Restaurant?>(null)
-    val currentRestaurant: StateFlow<Restaurant?> = _currentRestaurant.asStateFlow()
+    fun addToCart(item: CartItem) {
+        val currentCart = _cart.value
+        
+        // If adding from a different restaurant, clear cart first (standard food app behavior)
+        if (currentCart.restaurantSlug != null && currentCart.restaurantSlug != item.restaurantSlug) {
+            _cart.value = Cart(items = listOf(item), restaurantSlug = item.restaurantSlug)
+            return
+        }
 
-    private val _selectedTable = MutableStateFlow<String?>(null)
-    val selectedTable: StateFlow<String?> = _selectedTable.asStateFlow()
+        val items = currentCart.items.toMutableList()
+        val index = items.indexOfFirst { 
+            it.menuItem.id == item.menuItem.id && 
+            it.selectedVariant?.id == item.selectedVariant?.id &&
+            it.selectedAddOns.map { a -> a.id }.sorted() == item.selectedAddOns.map { a -> a.id }.sorted()
+        }
 
-    fun setTable(tableNo: String?) {
-        _selectedTable.value = tableNo
+        if (index != -1) {
+            val existing = items[index]
+            items[index] = existing.copy(quantity = existing.quantity + item.quantity)
+        } else {
+            items.add(item)
+        }
+
+        _cart.value = Cart(items = items, restaurantSlug = item.restaurantSlug)
     }
 
-    fun addToCart(item: MenuItem, restaurant: Restaurant) {
-        // Rule: If adding from a different restaurant, clear the cart first
-        if (_currentRestaurant.value != null && _currentRestaurant.value?.id != restaurant.id) {
-            _cartItems.value = emptyList()
+    fun removeFromCart(item: CartItem) {
+        val currentCart = _cart.value
+        val items = currentCart.items.toMutableList()
+        val index = items.indexOfFirst { 
+            it.menuItem.id == item.menuItem.id && 
+            it.selectedVariant?.id == item.selectedVariant?.id &&
+            it.selectedAddOns.map { a -> a.id }.sorted() == item.selectedAddOns.map { a -> a.id }.sorted()
         }
-        _currentRestaurant.value = restaurant
 
-        _cartItems.update { currentItems ->
-            val existing = currentItems.find { it.menuItem.id == item.id }
-            if (existing != null) {
-                currentItems.map {
-                    if (it.menuItem.id == item.id) it.copy(quantity = it.quantity + 1) else it
-                }
+        if (index != -1) {
+            val existing = items[index]
+            if (existing.quantity > 1) {
+                items[index] = existing.copy(quantity = existing.quantity - 1)
             } else {
-                currentItems + CartItem(
-                    menuItem = item,
-                    quantity = 1,
-                    restaurantSlug = restaurant.slug,
-                    restaurantName = restaurant.name
-                )
+                items.removeAt(index)
             }
         }
-    }
 
-    fun increaseQuantity(itemId: Int) {
-        _cartItems.update { currentItems ->
-            currentItems.map {
-                if (it.menuItem.id == itemId) it.copy(quantity = it.quantity + 1) else it
-            }
-        }
-    }
-
-    fun decreaseQuantity(itemId: Int) {
-        _cartItems.update { currentItems ->
-            currentItems.mapNotNull {
-                if (it.menuItem.id == itemId) {
-                    if (it.quantity > 1) it.copy(quantity = it.quantity - 1) else null
-                } else it
-            }
-        }
-    }
-
-    fun removeFromCart(itemId: Int) {
-        _cartItems.update { currentItems ->
-            currentItems.filter { it.menuItem.id != itemId }
-        }
+        val slug = if (items.isEmpty()) null else currentCart.restaurantSlug
+        _cart.value = Cart(items = items, restaurantSlug = slug)
     }
 
     fun clearCart() {
-        _cartItems.value = emptyList()
-        _currentRestaurant.value = null
-    }
-
-    companion object {
-        @Volatile
-        private var INSTANCE: CartRepository? = null
-
-        fun getInstance(): CartRepository {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: CartRepository().also { INSTANCE = it }
-            }
-        }
+        _cart.value = Cart()
     }
 }

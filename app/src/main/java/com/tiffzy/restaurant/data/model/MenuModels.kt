@@ -16,5 +16,24 @@ data class MenuItem(
     val isFeatured: Boolean,
     val rating: Double,
     val reviewCount: Int,
-    val orderCount: Int
+    val orderCount: Int,
+    val isVeg: Boolean = true,
+    val isBestSeller: Boolean = false,
+    val variants: List<MenuVariant> = emptyList(),
+    val addOns: List<AddOn> = emptyList(),
+    val isFavorite: Boolean = false
+)
+
+data class MenuVariant(
+    val id: Int,
+    val name: String,
+    val price: Double,
+    val isAvailable: Boolean = true
+)
+
+data class AddOn(
+    val id: Int,
+    val name: String,
+    val price: Double,
+    val isAvailable: Boolean = true
 )

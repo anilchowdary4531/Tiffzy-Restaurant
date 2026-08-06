@@ -90,6 +90,14 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+    implementation("androidx.room:room-paging:2.6.1")
+
+    // Paging
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
+    
+    // Compose Material (for PullRefresh)
+    implementation(libs.androidx.compose.material)
 
     // Maps
     implementation(libs.play.services.maps)

@@ -1,77 +1,86 @@
 package com.tiffzy.restaurant.ui.auth
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.tiffzy.restaurant.R
 import com.tiffzy.restaurant.core.base.UiState
 import com.tiffzy.restaurant.data.model.LoginResponse
 
 @Composable
-fun LoginScreen(
+fun RegisterScreen(
     viewModel: AuthViewModel,
-    onNavigateToRegister: () -> Unit,
-    onNavigateToOtpLogin: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit,
-    onLoginSuccess: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    onRegisterSuccess: () -> Unit
 ) {
+    val name by viewModel.name.collectAsState()
     val email by viewModel.email.collectAsState()
+    val phone by viewModel.phone.collectAsState()
     val password by viewModel.password.collectAsState()
-    val rememberMe by viewModel.rememberMe.collectAsState()
+    val restaurantName by viewModel.restaurantName.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
-    
+
     var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState) {
         if (uiState is UiState.Success && (uiState as UiState.Success).data is LoginResponse) {
-            onLoginSuccess()
+            onRegisterSuccess()
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.tiffzy_logo),
-            contentDescription = "Logo",
-            modifier = Modifier.size(120.dp)
-        )
-        
         Spacer(modifier = Modifier.height(32.dp))
         
         Text(
-            text = "Welcome Back",
+            text = "Create Account",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
         
         Text(
-            text = "Login to manage your restaurant",
+            text = "Partner with Tiffzy and grow your business",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         
         Spacer(modifier = Modifier.height(32.dp))
+        
+        OutlinedTextField(
+            value = name,
+            onValueChange = { viewModel.name.value = it },
+            label = { Text("Owner Name") },
+            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = restaurantName,
+            onValueChange = { viewModel.restaurantName.value = it },
+            label = { Text("Restaurant Name") },
+            leadingIcon = { Icon(Icons.Default.Restaurant, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
         
         OutlinedTextField(
             value = email,
@@ -80,6 +89,17 @@ fun LoginScreen(
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = phone,
+            onValueChange = { viewModel.phone.value = it },
+            label = { Text("Phone Number") },
+            leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
         )
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -102,25 +122,7 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
         
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = rememberMe,
-                    onCheckedChange = { viewModel.rememberMe.value = it }
-                )
-                Text("Remember Me", style = MaterialTheme.typography.bodySmall)
-            }
-            
-            TextButton(onClick = onNavigateToForgotPassword) {
-                Text("Forgot Password?", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
         
         if (uiState is UiState.Error) {
             Text(
@@ -132,7 +134,7 @@ fun LoginScreen(
         }
         
         Button(
-            onClick = { viewModel.login() },
+            onClick = { viewModel.register() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -141,19 +143,8 @@ fun LoginScreen(
             if (uiState is UiState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
             } else {
-                Text("Login")
+                Text("Register")
             }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        OutlinedButton(
-            onClick = onNavigateToOtpLogin,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-        ) {
-            Text("Login with OTP")
         }
         
         Spacer(modifier = Modifier.height(32.dp))
@@ -163,9 +154,9 @@ fun LoginScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Don't have an account?")
-            TextButton(onClick = onNavigateToRegister) {
-                Text("Register")
+            Text("Already have an account?")
+            TextButton(onClick = onNavigateToLogin) {
+                Text("Login")
             }
         }
     }

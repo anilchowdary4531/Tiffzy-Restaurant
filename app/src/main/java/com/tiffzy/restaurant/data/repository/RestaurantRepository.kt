@@ -1,12 +1,20 @@
 package com.tiffzy.restaurant.data.repository
 
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.tiffzy.restaurant.core.base.BaseRepository
 import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.local.TiffzyDatabase
 import com.tiffzy.restaurant.data.local.dao.MenuItemDao
+import com.tiffzy.restaurant.data.local.dao.RestaurantDao
 import com.tiffzy.restaurant.data.local.entities.toDomain
 import com.tiffzy.restaurant.data.local.entities.toEntity
 import com.tiffzy.restaurant.data.model.*
 import com.tiffzy.restaurant.data.remote.ApiService
+import com.tiffzy.restaurant.data.remote.RestaurantRemoteMediator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
@@ -16,9 +24,48 @@ import javax.inject.Singleton
 @Singleton
 class RestaurantRepository @Inject constructor(
     private val apiService: ApiService,
-    private val menuItemDao: MenuItemDao
+    private val menuItemDao: MenuItemDao,
+    private val restaurantDao: RestaurantDao,
+    private val database: TiffzyDatabase
 ) : BaseRepository() {
     
+    // Home Data
+    suspend fun getHomeData(): Resource<HomeResponse> {
+        val result = safeApiCall { apiService.getHomeData() }
+        if (result is Resource.Success) {
+            // Cache data
+            restaurantDao.clearCategories()
+            restaurantDao.insertCategories(result.data.categories.map { it.toEntity() })
+            
+            restaurantDao.deleteRestaurantsByType("popular")
+            restaurantDao.insertRestaurants(result.data.popularRestaurants.map { it.toEntity("popular") })
+            
+            restaurantDao.deleteRestaurantsByType("recommended")
+            restaurantDao.insertRestaurants(result.data.recommendedRestaurants.map { it.toEntity("recommended") })
+        }
+        return result
+    }
+
+    fun getNearbyRestaurants(lat: Double, lng: Double): Flow<PagingData<Restaurant>> {
+        @OptIn(ExperimentalPagingApi::class)
+        return Pager(
+            config = PagingConfig(pageSize = 10, prefetchDistance = 2),
+            remoteMediator = RestaurantRemoteMediator(apiService, database, lat, lng),
+            pagingSourceFactory = { restaurantDao.getNearbyRestaurantsPaging() }
+        ).flow.map { pagingData ->
+            pagingData.map { it.toDomain() }
+        }
+    }
+
+    suspend fun searchCatalog(query: String): Resource<SearchResponse> {
+        return safeApiCall { apiService.searchCatalog(query) }
+    }
+
+    suspend fun getRestaurantDetails(slug: String): Resource<RestaurantDetailResponse> {
+        return safeApiCall { apiService.getRestaurantDetails(slug) }
+    }
+
+    // Existing Owner logic...
     fun getCachedMenu(restaurantId: Int): Flow<List<MenuItem>> {
         return menuItemDao.getMenuItems(restaurantId).map { entities ->
             entities.map { it.toDomain() }

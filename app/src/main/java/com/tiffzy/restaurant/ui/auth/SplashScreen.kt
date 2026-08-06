@@ -8,32 +8,33 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tiffzy.restaurant.R
-import com.tiffzy.restaurant.ui.components.BrandLogo
-import com.tiffzy.restaurant.ui.theme.Dimens
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 
 @Composable
 fun SplashScreen(
     viewModel: AuthViewModel,
-    onNavigateToHome: () -> Unit,
+    onNavigateToOnboarding: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    onNavigateToRestaurantDashboard: () -> Unit
+    onNavigateToDashboard: () -> Unit,
+    onNavigateToHome: () -> Unit
 ) {
     LaunchedEffect(Unit) {
-        delay(800)
-        if (viewModel.checkAuthStatus()) {
+        delay(1500)
+        val isLoggedIn = viewModel.checkAuthStatus()
+        val isOnboardingDone = viewModel.isOnboardingCompleted()
+
+        if (isLoggedIn) {
             val accountType = viewModel.getAccountType()
-            
             if (accountType == "staff") {
-                onNavigateToRestaurantDashboard()
+                onNavigateToDashboard()
             } else {
                 onNavigateToHome()
             }
+        } else if (!isOnboardingDone) {
+            onNavigateToOnboarding()
         } else {
             onNavigateToLogin()
         }

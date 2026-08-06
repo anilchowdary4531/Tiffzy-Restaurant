@@ -52,6 +52,29 @@ data class LoginResponse(
     val user: StaffUser
 )
 
+data class RegisterRequest(
+    val name: String,
+    val email: String,
+    val phone: String,
+    val password: String,
+    val restaurantName: String
+)
+
+data class ForgotPasswordRequest(
+    val email: String
+)
+
+data class ResetPasswordRequest(
+    val email: String,
+    val otp: String,
+    val newPassword: String
+)
+
+data class GenericResponse(
+    val message: String,
+    val success: Boolean = true
+)
+
 data class StaffUser(
     val id: Int,
     val name: String,

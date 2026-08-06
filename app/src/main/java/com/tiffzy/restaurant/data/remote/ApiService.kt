@@ -20,6 +20,15 @@ interface ApiService {
     @POST("login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
+    @POST("register")
+    suspend fun register(@Body request: RegisterRequest): LoginResponse
+
+    @POST("forgot-password")
+    suspend fun forgotPassword(@Body request: ForgotPasswordRequest): GenericResponse
+
+    @POST("reset-password")
+    suspend fun resetPassword(@Body request: ResetPasswordRequest): GenericResponse
+
     @GET("customer/address")
     suspend fun getAddresses(): AddressListResponse
 
@@ -31,6 +40,20 @@ interface ApiService {
 
     @GET("catalog/search")
     suspend fun searchCatalog(@Query("q") query: String): SearchResponse
+
+    @GET("home")
+    suspend fun getHomeData(): HomeResponse
+
+    @GET("restaurants/nearby")
+    suspend fun getNearbyRestaurants(
+        @Query("lat") lat: Double,
+        @Query("lng") lng: Double,
+        @Query("page") page: Int,
+        @Query("limit") limit: Int = 10
+    ): List<Restaurant>
+
+    @GET("restaurants/{slug}")
+    suspend fun getRestaurantDetails(@Path("slug") slug: String): RestaurantDetailResponse
 
     @GET("r/{slug}/menu")
     suspend fun getRestaurantMenu(@Path("slug") slug: String): RestaurantMenuResponse

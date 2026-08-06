@@ -22,5 +22,30 @@ data class Restaurant(
     val isActive: Boolean = true,
     val taxEnabled: Boolean = false,
     val taxPercent: Double = 0.0,
-    val upiId: String? = null
+    val upiId: String? = null,
+    val rating: Double = 0.0,
+    val reviewCount: Int = 0,
+    val deliveryTime: String? = null,
+    val distance: String? = null,
+    val images: List<String> = emptyList(),
+    val openingHours: String? = null,
+    val categories: List<String> = emptyList(),
+    val isFavorite: Boolean = false,
+    val cuisines: List<String> = emptyList(),
+    val averageCost: String? = null
+)
+
+data class Review(
+    val id: Int,
+    val userName: String,
+    val userImage: String?,
+    val rating: Double,
+    val comment: String,
+    val date: String
+)
+
+data class RestaurantDetailResponse(
+    val restaurant: Restaurant,
+    val reviews: List<Review>,
+    val relatedRestaurants: List<Restaurant>
 )

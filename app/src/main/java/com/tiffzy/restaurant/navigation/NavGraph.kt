@@ -11,10 +11,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.tiffzy.restaurant.ui.auth.AuthViewModel
-import com.tiffzy.restaurant.ui.auth.LoginScreen
-import com.tiffzy.restaurant.ui.auth.OtpScreen
-import com.tiffzy.restaurant.ui.auth.SplashScreen
+import com.tiffzy.restaurant.ui.auth.*
+import com.tiffzy.restaurant.ui.home.HomeScreen
+import com.tiffzy.restaurant.ui.home.HomeViewModel
+import com.tiffzy.restaurant.ui.home.details.RestaurantDetailScreen
+import com.tiffzy.restaurant.ui.home.details.RestaurantDetailViewModel
 import com.tiffzy.restaurant.ui.restaurant.*
 
 @Composable
@@ -29,8 +30,8 @@ fun NavGraph(
         composable(Screen.Splash.route) {
             SplashScreen(
                 viewModel = authViewModel,
-                onNavigateToHome = {
-                    navController.navigate(Screen.Dashboard.route) {
+                onNavigateToOnboarding = {
+                    navController.navigate(Screen.Onboarding.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
@@ -39,9 +40,25 @@ fun NavGraph(
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
-                onNavigateToRestaurantDashboard = {
+                onNavigateToDashboard = {
                     navController.navigate(Screen.Dashboard.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onFinish = {
+                    authViewModel.completeOnboarding()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
                 }
             )
@@ -50,10 +67,23 @@ fun NavGraph(
         composable(Screen.Login.route) {
             LoginScreen(
                 viewModel = authViewModel,
-                onOtpSent = {
-                    navController.navigate(Screen.Otp.route)
-                },
-                onStaffLoggedIn = {
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) },
+                onNavigateToOtpLogin = { navController.navigate(Screen.OtpLogin.route) },
+                onNavigateToForgotPassword = { navController.navigate(Screen.ForgotPassword.route) },
+                onLoginSuccess = {
+                    val nextRoute = if (authViewModel.phone.value.startsWith("9")) Screen.Home.route else Screen.Dashboard.route // Simple logic or fetch actual role
+                    navController.navigate(nextRoute) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                viewModel = authViewModel,
+                onNavigateToLogin = { navController.popBackStack() },
+                onRegisterSuccess = {
                     navController.navigate(Screen.Dashboard.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -61,17 +91,56 @@ fun NavGraph(
             )
         }
 
-        composable(Screen.Otp.route) {
-            OtpScreen(
+        composable(Screen.OtpLogin.route) {
+            OtpLoginScreen(
                 viewModel = authViewModel,
-                onAuthenticated = {
+                onNavigateBack = {
+                    authViewModel.resetState()
+                    navController.popBackStack()
+                },
+                onAuthSuccess = {
                     navController.navigate(Screen.Dashboard.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                },
-                onBack = {
+                }
+            )
+        }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(
+                viewModel = authViewModel,
+                onNavigateBack = {
                     authViewModel.resetState()
                     navController.popBackStack()
+                },
+                onResetSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.ForgotPassword.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Home.route) {
+            val homeViewModel: HomeViewModel = hiltViewModel()
+            HomeScreen(
+                viewModel = homeViewModel,
+                onNavigateToRestaurant = { restaurant ->
+                    navController.navigate(Screen.RestaurantDetail.createRoute(restaurant.slug))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.RestaurantDetail.route,
+            arguments = listOf(navArgument("slug") { type = NavType.StringType })
+        ) {
+            val detailViewModel: RestaurantDetailViewModel = hiltViewModel()
+            RestaurantDetailScreen(
+                viewModel = detailViewModel,
+                onBack = { navController.popBackStack() },
+                onNavigateToCart = {
+                    // navController.navigate(Screen.Cart.route)
                 }
             )
         }
@@ -79,25 +148,16 @@ fun NavGraph(
         composable(Screen.Dashboard.route) {
             RestaurantDashboardScreen(
                 onLogout = {
+                    authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                onOrdersClick = {
-                    navController.navigate(Screen.Orders.route)
-                },
-                onMenuClick = {
-                    navController.navigate(Screen.Menu.route)
-                },
-                onSalesClick = {
-                    navController.navigate(Screen.Sales.route)
-                },
-                onHistoryClick = {
-                    navController.navigate(Screen.History.route)
-                },
-                onSettingsClick = {
-                    navController.navigate(Screen.Settings.route)
-                }
+                onOrdersClick = { navController.navigate(Screen.Orders.route) },
+                onMenuClick = { navController.navigate(Screen.Menu.route) },
+                onSalesClick = { navController.navigate(Screen.Sales.route) },
+                onHistoryClick = { navController.navigate(Screen.History.route) },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) }
             )
         }
 
@@ -185,6 +245,7 @@ fun NavGraph(
             RestaurantSettingsScreen(
                 onBack = { navController.popBackStack() },
                 onLogout = {
+                    authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }

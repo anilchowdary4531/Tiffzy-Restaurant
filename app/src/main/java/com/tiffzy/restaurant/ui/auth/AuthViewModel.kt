@@ -3,7 +3,11 @@ package com.tiffzy.restaurant.ui.auth
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
 import com.tiffzy.restaurant.core.base.BaseViewModel
+import com.tiffzy.restaurant.core.base.UiState
 import com.tiffzy.restaurant.core.result.Resource
+import com.tiffzy.restaurant.data.model.LoginResponse
+import com.tiffzy.restaurant.data.model.RegisterRequest
+import com.tiffzy.restaurant.data.model.ResetPasswordRequest
 import com.tiffzy.restaurant.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -15,49 +19,57 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-sealed class AuthUiState {
-    object Idle : AuthUiState()
-    object Loading : AuthUiState()
-    object OtpSent : AuthUiState()
-    object Authenticated : AuthUiState()
-    data class Error(val message: String) : AuthUiState()
-}
-
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : BaseViewModel() {
 
-    private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
-    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<UiState<Any>>(UiState.Idle)
+    val uiState: StateFlow<UiState<Any>> = _uiState.asStateFlow()
 
     private val _timerValue = MutableStateFlow(0)
     val timerValue: StateFlow<Int> = _timerValue.asStateFlow()
 
     private var timerJob: Job? = null
 
-    var phone: String = ""
-    var email: String? = null
-    var otp: String = ""
-    var name: String? = null
-    
-    var staffEmail: String = ""
-    var staffPassword: String = ""
+    // Forms
+    var phone = MutableStateFlow("")
+    var email = MutableStateFlow("")
+    var password = MutableStateFlow("")
+    var name = MutableStateFlow("")
+    var restaurantName = MutableStateFlow("")
+    var otp = MutableStateFlow("")
+    var newPassword = MutableStateFlow("")
+    var rememberMe = MutableStateFlow(true)
 
-    fun sendOtp() {
-        if (phone.length < 10) {
-            _uiState.value = AuthUiState.Error("Enter a valid 10-digit phone number")
+    fun sendOtp(isForgotPassword: Boolean = false) {
+        val targetPhone = phone.value
+        val targetEmail = email.value
+
+        if (isForgotPassword && targetEmail.isEmpty()) {
+            _uiState.value = UiState.Error("Email is required")
             return
         }
+        if (!isForgotPassword && targetPhone.length < 10) {
+            _uiState.value = UiState.Error("Enter a valid 10-digit phone number")
+            return
+        }
+
         viewModelScope.launch {
-            _uiState.value = AuthUiState.Loading
-            when (val result = repository.sendOtp(phone, email)) {
+            _uiState.value = UiState.Loading
+            val result = if (isForgotPassword) {
+                repository.forgotPassword(targetEmail)
+            } else {
+                repository.sendOtp(targetPhone)
+            }
+
+            when (result) {
                 is Resource.Success -> {
-                    _uiState.value = AuthUiState.OtpSent
+                    _uiState.value = UiState.Success(result.data)
                     startTimer()
                 }
                 is Resource.Error -> {
-                    _uiState.value = AuthUiState.Error(result.message)
+                    _uiState.value = UiState.Error(result.message)
                 }
                 else -> {}
             }
@@ -65,19 +77,91 @@ class AuthViewModel @Inject constructor(
     }
 
     fun verifyOtp() {
-        if (otp.length != 6) {
-            _uiState.value = AuthUiState.Error("Enter a valid 6-digit OTP")
+        if (otp.value.length != 6) {
+            _uiState.value = UiState.Error("Enter a valid 6-digit OTP")
             return
         }
         viewModelScope.launch {
-            _uiState.value = AuthUiState.Loading
-            when (val result = repository.verifyOtp(phone, otp, name, email)) {
+            _uiState.value = UiState.Loading
+            when (val result = repository.verifyOtp(phone.value, otp.value)) {
                 is Resource.Success -> {
-                    _uiState.value = AuthUiState.Authenticated
+                    _uiState.value = UiState.Success(result.data)
                     registerFcmToken()
                 }
                 is Resource.Error -> {
-                    _uiState.value = AuthUiState.Error(result.message)
+                    _uiState.value = UiState.Error(result.message)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun login() {
+        if (email.value.isEmpty() || password.value.isEmpty()) {
+            _uiState.value = UiState.Error("Email and password are required")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            when (val result = repository.login(email.value, password.value)) {
+                is Resource.Success -> {
+                    _uiState.value = UiState.Success(result.data)
+                    registerFcmToken()
+                }
+                is Resource.Error -> {
+                    _uiState.value = UiState.Error(result.message)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun register() {
+        if (name.value.isEmpty() || email.value.isEmpty() || phone.value.isEmpty() || 
+            password.value.isEmpty() || restaurantName.value.isEmpty()) {
+            _uiState.value = UiState.Error("All fields are required")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            val request = RegisterRequest(
+                name = name.value,
+                email = email.value,
+                phone = phone.value,
+                password = password.value,
+                restaurantName = restaurantName.value
+            )
+            when (val result = repository.register(request)) {
+                is Resource.Success -> {
+                    _uiState.value = UiState.Success(result.data)
+                    registerFcmToken()
+                }
+                is Resource.Error -> {
+                    _uiState.value = UiState.Error(result.message)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun resetPassword() {
+        if (email.value.isEmpty() || otp.value.isEmpty() || newPassword.value.isEmpty()) {
+            _uiState.value = UiState.Error("All fields are required")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            val request = ResetPasswordRequest(
+                email = email.value,
+                otp = otp.value,
+                newPassword = newPassword.value
+            )
+            when (val result = repository.resetPassword(request)) {
+                is Resource.Success -> {
+                    _uiState.value = UiState.Success(result.data)
+                }
+                is Resource.Error -> {
+                    _uiState.value = UiState.Error(result.message)
                 }
                 else -> {}
             }
@@ -106,52 +190,29 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun resendOtp() {
-        if (_timerValue.value == 0) {
-            sendOtp()
-        }
-    }
-
     fun resetState() {
-        _uiState.value = AuthUiState.Idle
+        _uiState.value = UiState.Idle
     }
-
-    fun staffLogin() {
-        if (staffEmail.isEmpty() || staffPassword.isEmpty()) {
-            _uiState.value = AuthUiState.Error("Email and password are required")
-            return
-        }
-        viewModelScope.launch {
-            _uiState.value = AuthUiState.Loading
-            when (val result = repository.login(staffEmail, staffPassword)) {
-                is Resource.Success -> {
-                    _uiState.value = AuthUiState.Authenticated
-                }
-                is Resource.Error -> {
-                    _uiState.value = AuthUiState.Error(result.message)
-                }
-                else -> {}
-            }
-        }
-    }
-
-    suspend fun getAccountType(): String? = repository.getAccountType()
 
     suspend fun checkAuthStatus(): Boolean {
         val token = repository.getAuthToken()
-        return if (token != null) {
-            _uiState.value = AuthUiState.Authenticated
-            registerFcmToken()
-            true
-        } else {
-            false
-        }
+        return token != null
     }
 
     fun logout() {
         viewModelScope.launch {
             repository.logout()
-            _uiState.value = AuthUiState.Idle
+            _uiState.value = UiState.Idle
+        }
+    }
+
+    suspend fun isOnboardingCompleted(): Boolean {
+        return repository.isOnboardingCompleted()
+    }
+
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            repository.setOnboardingCompleted()
         }
     }
 }

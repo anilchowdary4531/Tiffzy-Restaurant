@@ -24,6 +24,7 @@ class SessionManager @Inject constructor(@ApplicationContext private val context
         private val USER_ROLE = stringPreferencesKey("user_role")
         private val ACCOUNT_TYPE = stringPreferencesKey("account_type")
         private val RESTAURANT_ID = stringPreferencesKey("restaurant_id")
+        private val IS_ONBOARDING_COMPLETED = stringPreferencesKey("onboarding_completed")
     }
 
     val authToken: Flow<String?> = context.dataStore.data.map { it[AUTH_TOKEN] }
@@ -32,9 +33,14 @@ class SessionManager @Inject constructor(@ApplicationContext private val context
     val userRole: Flow<String?> = context.dataStore.data.map { it[USER_ROLE] }
     val accountType: Flow<String?> = context.dataStore.data.map { it[ACCOUNT_TYPE] }
     val restaurantId: Flow<String?> = context.dataStore.data.map { it[RESTAURANT_ID] }
+    val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { it[IS_ONBOARDING_COMPLETED] == "true" }
 
     suspend fun saveAuthToken(token: String) {
         context.dataStore.edit { it[AUTH_TOKEN] = token }
+    }
+
+    suspend fun setOnboardingCompleted() {
+        context.dataStore.edit { it[IS_ONBOARDING_COMPLETED] = "true" }
     }
 
     suspend fun saveUserInfo(name: String?, phone: String, type: String) {

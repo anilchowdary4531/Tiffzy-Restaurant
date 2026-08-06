@@ -37,6 +37,23 @@ class AuthRepository @Inject constructor(
         return result
     }
 
+    suspend fun register(request: RegisterRequest): Resource<LoginResponse> {
+        val result = safeApiCall { apiService.register(request) }
+        if (result is Resource.Success) {
+            sessionManager.saveAuthToken(result.data.token)
+            sessionManager.saveStaffInfo(result.data.user.name, result.data.user.role, result.data.user.restaurantId)
+        }
+        return result
+    }
+
+    suspend fun forgotPassword(email: String): Resource<GenericResponse> {
+        return safeApiCall { apiService.forgotPassword(ForgotPasswordRequest(email)) }
+    }
+
+    suspend fun resetPassword(request: ResetPasswordRequest): Resource<GenericResponse> {
+        return safeApiCall { apiService.resetPassword(request) }
+    }
+
     suspend fun registerFcmToken(token: String): Resource<Unit> {
         return safeApiCall { apiService.registerFcmToken(RegisterFcmTokenRequest(token)) }
     }
@@ -44,6 +61,12 @@ class AuthRepository @Inject constructor(
     suspend fun getAuthToken(): String? = sessionManager.authToken.first()
     
     suspend fun getAccountType(): String? = sessionManager.accountType.first()
+
+    suspend fun isOnboardingCompleted(): Boolean = sessionManager.isOnboardingCompleted.first()
+
+    suspend fun setOnboardingCompleted() {
+        sessionManager.setOnboardingCompleted()
+    }
 
     suspend fun logout() {
         sessionManager.logout()
