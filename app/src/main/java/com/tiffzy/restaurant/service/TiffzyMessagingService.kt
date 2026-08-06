@@ -45,23 +45,21 @@ class TiffzyMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.d(TAG, "From: ${remoteMessage.from}")
-
-        val isOrderEvent = remoteMessage.data.containsKey("orderId") || 
-                          remoteMessage.data["type"]?.contains("ORDER", ignoreCase = true) == true ||
-                          remoteMessage.notification?.title?.contains("Order", ignoreCase = true) == true
         
-        if (!isOrderEvent) return
+        val title = remoteMessage.notification?.title ?: remoteMessage.data["title"] ?: "Tiffzy Update"
+        val body = remoteMessage.notification?.body ?: remoteMessage.data["body"] ?: remoteMessage.data["message"] ?: ""
+        val type = remoteMessage.data["type"] ?: "promotion"
+        val orderId = remoteMessage.data["orderId"]?.toIntOrNull()
 
-        remoteMessage.notification?.let {
-            val orderId = remoteMessage.data["orderId"]?.toIntOrNull() ?: 0
-            NotificationHelper.sendOrderNotification(this, it.title ?: "Order Update", it.body ?: "", orderId)
-        } ?: run {
-            if (remoteMessage.data.isNotEmpty()) {
-                val title = remoteMessage.data["title"] ?: "Order Update"
-                val message = remoteMessage.data["body"] ?: remoteMessage.data["message"] ?: "Your order has been updated"
-                val orderId = remoteMessage.data["orderId"]?.toIntOrNull() ?: 0
-                NotificationHelper.sendOrderNotification(this, title, message, orderId)
+        when {
+            orderId != null || type.contains("ORDER", ignoreCase = true) -> {
+                NotificationHelper.sendOrderNotification(this, title, body, orderId ?: 0)
+            }
+            type.lowercase() == "offer" || type.lowercase() == "promotion" -> {
+                NotificationHelper.sendPromotionNotification(this, title, body)
+            }
+            else -> {
+                NotificationHelper.sendPromotionNotification(this, title, body)
             }
         }
     }

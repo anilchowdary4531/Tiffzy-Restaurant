@@ -25,6 +25,8 @@ import com.tiffzy.restaurant.ui.home.orders.OrderListScreen
 import com.tiffzy.restaurant.ui.home.orders.OrderViewModel
 import com.tiffzy.restaurant.ui.home.orders.OrderTrackingScreen
 import com.tiffzy.restaurant.ui.home.orders.OrderTrackingViewModel
+import com.tiffzy.restaurant.ui.home.notifications.NotificationListScreen
+import com.tiffzy.restaurant.ui.home.notifications.NotificationViewModel
 import com.tiffzy.restaurant.ui.home.address.AddressListScreen
 import com.tiffzy.restaurant.ui.home.address.AddAddressScreen
 import com.tiffzy.restaurant.ui.home.address.AddressViewModel
@@ -254,6 +256,22 @@ fun NavGraph(
             OrderTrackingScreen(
                 viewModel = trackingViewModel,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Notifications.route) {
+            val notificationViewModel: NotificationViewModel = hiltViewModel()
+            NotificationListScreen(
+                viewModel = notificationViewModel,
+                onBack = { navController.popBackStack() },
+                onNotificationClick = { notification ->
+                    if (notification.type == "order_update") {
+                        val orderId = notification.metadata?.get("orderId")?.toIntOrNull()
+                        if (orderId != null) {
+                            navController.navigate(Screen.OrderTracking.createRoute(orderId))
+                        }
+                    }
+                }
             )
         }
 

@@ -100,6 +100,15 @@ interface ApiService {
     @POST("customer/fcm-token")
     suspend fun registerFcmToken(@Body request: RegisterFcmTokenRequest)
 
+    @GET("customer/notifications")
+    suspend fun getNotifications(): NotificationListResponse
+
+    @PATCH("customer/notifications/{id}/read")
+    suspend fun markAsRead(@Path("id") id: Int): GenericResponse
+
+    @DELETE("customer/notifications/{id}")
+    suspend fun deleteNotification(@Path("id") id: Int): GenericResponse
+
     // Restaurant Management APIs
     @GET("owner/dashboard/{restaurantId}")
     suspend fun getRestaurantDashboard(@Path("restaurantId") restaurantId: Int): RestaurantDashboardResponse

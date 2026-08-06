@@ -20,22 +20,36 @@ object NotificationHelper {
         orderId: Int,
         isStaff: Boolean = false
     ) {
+        val channelName = if (isStaff) "Staff Order Updates" else "Order Updates"
+        sendGenericNotification(context, title, message, if (isStaff) "tiffzy://restaurant/order/$orderId" else "tiffzy://order/$orderId", orderId, channelName)
+    }
+
+    fun sendPromotionNotification(
+        context: Context,
+        title: String,
+        message: String
+    ) {
+        sendGenericNotification(context, title, message, "tiffzy://notifications", 0, "Promotions")
+    }
+
+    private fun sendGenericNotification(
+        context: Context,
+        title: String,
+        message: String,
+        deepLink: String,
+        id: Int,
+        channelName: String
+    ) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = context.getString(R.string.default_notification_channel_id)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Order Updates",
+                channelName,
                 NotificationManager.IMPORTANCE_HIGH
             )
             notificationManager.createNotificationChannel(channel)
-        }
-
-        val deepLink = if (isStaff) {
-            "tiffzy://restaurant/order/$orderId"
-        } else {
-            "tiffzy://order/$orderId"
         }
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -44,7 +58,7 @@ object NotificationHelper {
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            context, orderId, intent,
+            context, id, intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -56,8 +70,7 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
-            .setCategory(NotificationCompat.CATEGORY_STATUS)
 
-        notificationManager.notify(orderId, notificationBuilder.build())
+        notificationManager.notify(id, notificationBuilder.build())
     }
 }
