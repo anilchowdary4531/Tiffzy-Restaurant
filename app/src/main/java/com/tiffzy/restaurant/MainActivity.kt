@@ -17,15 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.razorpay.PaymentData
-import com.razorpay.PaymentResultWithDataListener
+import com.phonepe.intent.sdk.api.PhonePe
 import com.tiffzy.restaurant.navigation.NavGraph
 import com.tiffzy.restaurant.ui.theme.TiffzyAppTheme
-
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
+class MainActivity : ComponentActivity() {
     
     private var navController: NavHostController? = null
 
@@ -33,19 +31,33 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         private var instance: MainActivity? = null
         fun getInstance(): MainActivity? = instance
         
-        var onPaymentSuccess: ((String, PaymentData) -> Unit)? = null
-        var onPaymentError: ((Int, String?, PaymentData?) -> Unit)? = null
+        var onPaymentResult: ((Boolean, String?) -> Unit)? = null
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ -> }
 
+    private val phonePeLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            onPaymentResult?.invoke(true, "SUCCESS")
+        } else {
+            onPaymentResult?.invoke(false, "FAILED")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         instance = this
         
+        // Initializing PhonePe with a placeholder. 
+        // In a real app, you might want to init with real Merchant ID if it's static.
+        // If dynamic, we do it in ViewModel before calling dispatch.
+        PhonePe.init(this, com.phonepe.intent.sdk.api.models.PhonePeEnvironment.RELEASE, "MERCHANT_ID", null)
+
         askNotificationPermission()
         
         setContent {
@@ -61,6 +73,10 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                 }
             }
         }
+    }
+
+    fun launchPhonePe(intent: Intent) {
+        phonePeLauncher.launch(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -79,22 +95,11 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         }
     }
 
-    override fun onPaymentSuccess(razorpayPaymentId: String?, data: PaymentData?) {
-        if (razorpayPaymentId != null && data != null) {
-            onPaymentSuccess?.invoke(razorpayPaymentId, data)
-        }
-    }
-
-    override fun onPaymentError(code: Int, response: String?, data: PaymentData?) {
-        onPaymentError?.invoke(code, response ?: "Payment cancelled or failed", data)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         if (instance == this) {
             instance = null
         }
-        onPaymentSuccess = null
-        onPaymentError = null
+        onPaymentResult = null
     }
 }

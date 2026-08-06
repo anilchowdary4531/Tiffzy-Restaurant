@@ -18,6 +18,9 @@ import com.tiffzy.restaurant.ui.home.cart.CartScreen
 import com.tiffzy.restaurant.ui.home.cart.CartViewModel
 import com.tiffzy.restaurant.ui.home.cart.CheckoutScreen
 import com.tiffzy.restaurant.ui.home.cart.CheckoutViewModel
+import com.tiffzy.restaurant.ui.home.payment.PaymentResultScreen
+import com.tiffzy.restaurant.ui.home.payment.PaymentStatus
+import com.tiffzy.restaurant.ui.home.payment.PaymentViewModel
 import com.tiffzy.restaurant.ui.home.address.AddressListScreen
 import com.tiffzy.restaurant.ui.home.address.AddAddressScreen
 import com.tiffzy.restaurant.ui.home.address.AddressViewModel
@@ -172,7 +175,49 @@ fun NavGraph(
                 viewModel = checkoutViewModel,
                 onBack = { navController.popBackStack() },
                 onOrderConfirmed = { orderNo ->
-                    // navController.navigate(Screen.OrderConfirmation.createRoute(orderNo))
+                    val orderId = (checkoutViewModel.orderState.value as? UiState.Success)?.data?.order?.id ?: 0
+                    if (checkoutViewModel.paymentMethod.value == "online") {
+                        navController.navigate(Screen.Payment.createRoute(orderId)) {
+                            popUpTo(Screen.Checkout.route) { inclusive = true }
+                        }
+                    } else {
+                        // navController.navigate(Screen.OrderConfirmation.createRoute(orderNo))
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Payment.route,
+            arguments = listOf(navArgument("orderId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val paymentViewModel: PaymentViewModel = hiltViewModel()
+            val status by paymentViewModel.paymentStatus.collectAsState()
+            val context = LocalContext.current as MainActivity
+
+            LaunchedEffect(Unit) {
+                paymentViewModel.initiatePhonePePayment(orderId)
+            }
+
+            LaunchedEffect(status) {
+                if (status is PaymentStatus.PaymentInitiated) {
+                    MainActivity.onPaymentResult = { success, resultStatus ->
+                        paymentViewModel.onPaymentResult(success, resultStatus)
+                    }
+                    context.launchPhonePe((status as PaymentStatus.PaymentInitiated).intent)
+                }
+            }
+
+            PaymentResultScreen(
+                status = status,
+                onContinue = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onRetry = {
+                    paymentViewModel.initiatePhonePePayment(orderId)
                 }
             )
         }

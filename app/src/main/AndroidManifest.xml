@@ -7,6 +7,16 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <queries>
+        <package android:name="com.phonepe.app" />
+        <package android:name="com.phonepe.app.prephil" />
+        <package android:name="com.phonepe.simulator" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
+        </intent>
+    </queries>
+
     <application
         android:name=".TiffzyApplication"
         android:allowBackup="true"

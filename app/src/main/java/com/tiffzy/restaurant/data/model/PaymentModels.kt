@@ -9,7 +9,8 @@ data class CreatePaymentRequest(
 data class CreatePaymentResponse(
     val payment: PaymentData,
     val provider: String,
-    val razorpay: RazorpayOrderData?
+    val razorpay: RazorpayOrderData? = null,
+    val phonepe: PhonePePaymentData? = null
 )
 
 data class PaymentData(
@@ -30,12 +31,21 @@ data class RazorpayOrderData(
     val currency: String
 )
 
+data class PhonePePaymentData(
+    val base64Payload: String,
+    val checksum: String,
+    val apiEndPoint: String,
+    val merchantId: String,
+    val appId: String? = null
+)
+
 data class VerifyPaymentRequest(
     val paymentId: Int? = null,
     val orderId: Int? = null,
     val razorpayOrderId: String? = null,
     val razorpayPaymentId: String? = null,
     val razorpaySignature: String? = null,
+    val phonepeTransactionId: String? = null,
     val status: String? = null,
     val paymentMode: String? = null
 )
