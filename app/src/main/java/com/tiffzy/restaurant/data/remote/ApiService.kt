@@ -119,6 +119,12 @@ interface ApiService {
     @GET("customer/wallet/history")
     suspend fun getWalletHistory(): WalletHistoryResponse
 
+    @POST("customer/wallet/recharge")
+    suspend fun rechargeWallet(@Body request: RechargeRequest): RechargeResponse
+
+    @POST("customer/wallet/verify")
+    suspend fun verifyRecharge(@Body request: VerifyPaymentRequest): VerifyPaymentResponse
+
     @GET("customer/cards")
     suspend fun getSavedCards(): List<SavedCard>
 

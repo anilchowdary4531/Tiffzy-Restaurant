@@ -77,3 +77,16 @@ data class WalletTransaction(
     val description: String,
     val createdAt: String
 )
+
+data class RechargeRequest(
+    val amount: Double,
+    val provider: String // razorpay | phonepe
+)
+
+data class RechargeResponse(
+    val rechargeId: Int,
+    val payment: PaymentData,
+    val provider: String,
+    val razorpay: RazorpayOrderData? = null,
+    val phonepe: PhonePePaymentData? = null
+)

@@ -101,9 +101,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -193,9 +193,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -289,9 +289,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -382,9 +382,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -478,9 +478,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -574,9 +574,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -668,9 +668,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -769,9 +769,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -861,9 +861,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -962,9 +962,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -1085,9 +1085,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -1204,9 +1204,9 @@ fun NavGraph(
         }
 
         composable(Screen.Wallet.route) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+            val walletViewModel: WalletViewModel = hiltViewModel()
             WalletScreen(
-                viewModel = profileViewModel,
+                viewModel = walletViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

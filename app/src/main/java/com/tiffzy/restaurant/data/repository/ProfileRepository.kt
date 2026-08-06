@@ -29,6 +29,14 @@ class ProfileRepository @Inject constructor(
         return safeApiCall { apiService.getWalletHistory() }
     }
 
+    suspend fun rechargeWallet(amount: Double, provider: String): Resource<RechargeResponse> {
+        return safeApiCall { apiService.rechargeWallet(RechargeRequest(amount, provider)) }
+    }
+
+    suspend fun verifyRecharge(request: VerifyPaymentRequest): Resource<VerifyPaymentResponse> {
+        return safeApiCall { apiService.verifyRecharge(request) }
+    }
+
     suspend fun getSavedCards(): Resource<List<SavedCard>> {
         return safeApiCall { apiService.getSavedCards() }
     }
