@@ -70,6 +70,18 @@ interface ApiService {
     @POST("r/{slug}/order")
     suspend fun placeOrder(@Path("slug") slug: String, @Body request: OrderRequest): OrderResponse
 
+    @GET("customer/orders/{id}")
+    suspend fun getOrderDetails(@Path("id") id: Int): OrderResponse
+
+    @POST("customer/orders/{id}/cancel")
+    suspend fun cancelOrder(@Path("id") id: Int): GenericResponse
+
+    @POST("customer/orders/{id}/reorder")
+    suspend fun reorder(@Path("id") id: Int): OrderResponse
+
+    @GET("customer/orders/{id}/invoice")
+    suspend fun getInvoiceUrl(@Path("id") id: Int): GenericResponse
+
     @POST("payments/create")
     suspend fun createPayment(@Body request: CreatePaymentRequest): CreatePaymentResponse
 

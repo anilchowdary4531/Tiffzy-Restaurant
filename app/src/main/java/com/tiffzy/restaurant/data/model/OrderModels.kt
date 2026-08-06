@@ -76,9 +76,21 @@ data class OrderDetails(
     val paymentMode: String?,
     val fulfillment: String?,
     val createdAt: String,
+    val estimatedTime: String? = null,
+    val driver: DriverDetails? = null,
     val items: List<OrderItemDetails>,
     val statusEvents: List<OrderStatusEvent>?,
     val restaurant: RestaurantSummary? = null
+)
+
+data class DriverDetails(
+    val id: Int,
+    val name: String,
+    val phone: String,
+    val vehicleNo: String?,
+    val image: String?,
+    val currentLat: Double?,
+    val currentLng: Double?
 )
 
 data class OrderItemDetails(

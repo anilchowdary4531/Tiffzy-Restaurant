@@ -21,6 +21,10 @@ import com.tiffzy.restaurant.ui.home.cart.CheckoutViewModel
 import com.tiffzy.restaurant.ui.home.payment.PaymentResultScreen
 import com.tiffzy.restaurant.ui.home.payment.PaymentStatus
 import com.tiffzy.restaurant.ui.home.payment.PaymentViewModel
+import com.tiffzy.restaurant.ui.home.orders.OrderListScreen
+import com.tiffzy.restaurant.ui.home.orders.OrderViewModel
+import com.tiffzy.restaurant.ui.home.orders.OrderTrackingScreen
+import com.tiffzy.restaurant.ui.home.orders.OrderTrackingViewModel
 import com.tiffzy.restaurant.ui.home.address.AddressListScreen
 import com.tiffzy.restaurant.ui.home.address.AddAddressScreen
 import com.tiffzy.restaurant.ui.home.address.AddressViewModel
@@ -181,7 +185,9 @@ fun NavGraph(
                             popUpTo(Screen.Checkout.route) { inclusive = true }
                         }
                     } else {
-                        // navController.navigate(Screen.OrderConfirmation.createRoute(orderNo))
+                        navController.navigate(Screen.OrderTracking.createRoute(orderId)) {
+                            popUpTo(Screen.Home.route)
+                        }
                     }
                 }
             )
@@ -212,13 +218,42 @@ fun NavGraph(
             PaymentResultScreen(
                 status = status,
                 onContinue = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(0) { inclusive = true }
+                    val orderNo = (status as? PaymentStatus.Success)?.orderNo
+                    if (orderNo != null) {
+                        navController.navigate(Screen.OrderTracking.createRoute(orderId)) {
+                            popUpTo(Screen.Home.route)
+                        }
+                    } else {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 },
                 onRetry = {
                     paymentViewModel.initiatePhonePePayment(orderId)
                 }
+            )
+        }
+
+        composable(Screen.OrderList.route) {
+            val orderViewModel: OrderViewModel = hiltViewModel()
+            OrderListScreen(
+                viewModel = orderViewModel,
+                onOrderClick = { orderId ->
+                    navController.navigate(Screen.OrderTracking.createRoute(orderId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.OrderTracking.route,
+            arguments = listOf(navArgument("orderId") { type = NavType.IntType })
+        ) {
+            val trackingViewModel: OrderTrackingViewModel = hiltViewModel()
+            OrderTrackingScreen(
+                viewModel = trackingViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 
