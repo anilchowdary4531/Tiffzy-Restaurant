@@ -1,13 +1,14 @@
 package com.tiffzy.restaurant.ui.restaurant
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.ListAlt
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,43 +21,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.tiffzy.restaurant.data.model.AnalyticsResponse
 import com.tiffzy.restaurant.data.model.RestaurantSettings
+import com.tiffzy.restaurant.data.model.TableSection
+import com.tiffzy.restaurant.navigation.Screen
 import com.tiffzy.restaurant.ui.components.TiffzyErrorState
 import com.tiffzy.restaurant.ui.components.TiffzyLoadingIndicator
-import com.tiffzy.restaurant.ui.components.TiffzyTopBar
+import com.tiffzy.restaurant.ui.restaurant.components.OwnerShell
+import com.tiffzy.restaurant.ui.restaurant.components.TableSectionView
+import com.tiffzy.restaurant.ui.restaurant.components.TableStatusLegend
 import com.tiffzy.restaurant.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RestaurantDashboardScreen(
+    navController: NavController,
     onLogout: () -> Unit,
-    onOrdersClick: () -> Unit,
-    onMenuClick: () -> Unit,
-    onSalesClick: () -> Unit,
-    onHistoryClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     viewModel: RestaurantDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadDashboard()
-    }
-
-    Scaffold(
-        topBar = {
-            TiffzyTopBar(
-                title = "Management",
-                subtitle = if (uiState is DashboardUiState.Success) (uiState as DashboardUiState.Success).settings.name else "Restaurant Hub",
-                actions = {
-                    IconButton(onClick = { viewModel.logout(onLogout) }) {
-                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout", tint = MaterialTheme.colorScheme.error)
-                    }
-                }
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+    OwnerShell(
+        title = "Dashboard",
+        restaurantName = if (uiState is DashboardUiState.Success) (uiState as DashboardUiState.Success).settings.name else "Tiffzy Owner",
+        navController = navController,
+        onLogout = { viewModel.logout(onLogout) }
     ) { innerPadding ->
         when (val state = uiState) {
             is DashboardUiState.Loading -> TiffzyLoadingIndicator()
@@ -69,12 +59,9 @@ fun RestaurantDashboardScreen(
                 DashboardContent(
                     analytics = state.analytics,
                     settings = state.settings,
-                    onOrdersClick = onOrdersClick,
-                    onMenuClick = onMenuClick,
-                    onSalesClick = onSalesClick,
-                    onHistoryClick = onHistoryClick,
-                    onSettingsClick = onSettingsClick,
+                    tableSections = state.tableSections,
                     onToggleStatus = { viewModel.toggleRestaurantStatus(state.settings.isActive) },
+                    onNavigate = { screen -> navController.navigate(screen.route) },
                     modifier = Modifier.fillMaxSize().padding(innerPadding)
                 )
             }
@@ -87,12 +74,9 @@ fun RestaurantDashboardScreen(
 fun DashboardContent(
     analytics: AnalyticsResponse,
     settings: RestaurantSettings,
-    onOrdersClick: () -> Unit,
-    onMenuClick: () -> Unit,
-    onSalesClick: () -> Unit,
-    onHistoryClick: () -> Unit,
-    onSettingsClick: () -> Unit,
+    tableSections: List<TableSection>,
     onToggleStatus: () -> Unit,
+    onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -125,47 +109,78 @@ fun DashboardContent(
             )
         }
         
-        Spacer(modifier = Modifier.height(Dimens.PaddingExtraLarge))
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
 
-        // Main Stats (Sales & Count)
+        // Sales Summary
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMedium)) {
             StatCard(
-                label = "Today's Sales",
+                label = "Revenue",
                 value = "₹${analytics.overview.totalRevenue.toInt()}",
                 icon = Icons.Default.CurrencyRupee,
                 modifier = Modifier.weight(1f),
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             )
             StatCard(
-                label = "Total Orders",
+                label = "Orders",
                 value = analytics.overview.totalOrders.toString(),
                 icon = Icons.Default.ShoppingBag,
                 modifier = Modifier.weight(1f)
             )
         }
+
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+
+        // Table Summary
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMedium)) {
+            MiniStat(label = "Total Tables", value = analytics.realtime.totalTables.toString(), color = Color.Gray, modifier = Modifier.weight(1f))
+            MiniStat(label = "Occupied", value = analytics.realtime.activeTables.toString(), color = Color(0xFFFC8019), modifier = Modifier.weight(1f))
+            MiniStat(label = "Free", value = (analytics.realtime.totalTables - analytics.realtime.activeTables).toString(), color = Color(0xFF4CAF50), modifier = Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+
+        // Table Legend
+        TableStatusLegend()
+
+        // Tables by Section
+        // Defensive check for null from API
+        @Suppress("SENSELESS_COMPARISON")
+        val sections = if (tableSections == null) emptyList() else tableSections
         
-        Spacer(modifier = Modifier.height(Dimens.PaddingExtraLarge))
+        sections.forEach { section ->
+            TableSectionView(
+                section = section,
+                onTableClick = { /* TODO: Open Table Details */ }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
-        // Live Order Funnel
-        Text(
-            text = "LIVE ORDERS",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            letterSpacing = 2.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSmall)) {
-            val newOrders = analytics.statusFunnel.filter { it.status == "PLACED" || it.status == "ACCEPTED" }.sumOf { it.count }
-            val preparing = analytics.statusFunnel.find { it.status == "PREPARING" }?.count ?: 0
-            val ready = analytics.statusFunnel.find { it.status == "READY" }?.count ?: 0
-            val completed = analytics.overview.deliveredOrders
-
-            MiniStat(label = "New", value = newOrders.toString(), color = Color(0xFF2196F3), modifier = Modifier.weight(1f))
-            MiniStat(label = "Prep", value = preparing.toString(), color = Color(0xFFFF9800), modifier = Modifier.weight(1f))
-            MiniStat(label = "Ready", value = ready.toString(), color = Color(0xFF4CAF50), modifier = Modifier.weight(1f))
-            MiniStat(label = "Done", value = completed.toString(), color = MaterialTheme.colorScheme.outline, modifier = Modifier.weight(1f))
+        // Online Orders Summary
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Online Orders", fontWeight = FontWeight.Bold)
+                    TextButton(onClick = { onNavigate(Screen.OnlineOrders) }) {
+                        Text("View All")
+                    }
+                }
+                
+                val onlineOrders = analytics.overview.totalOrders
+                if (onlineOrders > 0) {
+                    Text(text = "You have $onlineOrders active online orders", style = MaterialTheme.typography.bodyMedium)
+                } else {
+                    Text(text = "No active online orders", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(Dimens.PaddingExtraLarge))
@@ -182,38 +197,40 @@ fun DashboardContent(
         
         ActionCard(
             title = "Order Manager",
-            subtitle = "Accept and process incoming orders",
+            subtitle = "Manage active service orders",
             icon = Icons.Default.FlashOn,
-            onClick = onOrdersClick
+            onClick = { onNavigate(Screen.LiveOrders) }
         )
         Spacer(modifier = Modifier.height(Dimens.SpacingSmall))
         ActionCard(
-            title = "Menu & Inventory",
+            title = "Billing Desk",
+            subtitle = "Create new bills and take payments",
+            icon = Icons.AutoMirrored.Filled.ReceiptLong,
+            onClick = { onNavigate(Screen.BillingDesk) }
+        )
+        Spacer(modifier = Modifier.height(Dimens.SpacingSmall))
+        ActionCard(
+            title = "Menu Studio",
             subtitle = "Manage items and availability",
             icon = Icons.AutoMirrored.Filled.ListAlt,
-            onClick = onMenuClick
+            onClick = { onNavigate(Screen.MenuStudio) }
         )
         Spacer(modifier = Modifier.height(Dimens.SpacingSmall))
         ActionCard(
-            title = "Sales Analytics",
+            title = "Analytics",
             subtitle = "Revenue and growth reports",
             icon = Icons.Default.BarChart,
-            onClick = onSalesClick
+            onClick = { onNavigate(Screen.Analytics) }
         )
         Spacer(modifier = Modifier.height(Dimens.SpacingSmall))
         ActionCard(
             title = "Order History",
             subtitle = "View past transactions",
             icon = Icons.Default.History,
-            onClick = onHistoryClick
+            onClick = { onNavigate(Screen.History) }
         )
-        Spacer(modifier = Modifier.height(Dimens.SpacingSmall))
-        ActionCard(
-            title = "Restaurant Settings",
-            subtitle = "Profile, hours and configuration",
-            icon = Icons.Default.Settings,
-            onClick = onSettingsClick
-        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -223,7 +240,7 @@ fun StatusIndicator(isOpen: Boolean, onClick: () -> Unit) {
         onClick = onClick,
         color = (if (isOpen) Color(0xFF4CAF50) else Color(0xFFF44336)).copy(alpha = 0.1f),
         shape = CircleShape,
-        border = androidx.compose.foundation.BorderStroke(1.dp, if (isOpen) Color(0xFF4CAF50) else Color(0xFFF44336))
+        border = BorderStroke(1.dp, if (isOpen) Color(0xFF4CAF50) else Color(0xFFF44336))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),

@@ -7,7 +7,7 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.11.0"
 lifecycleViewmodelCompose = "2.11.0"
 activityCompose = "1.13.0"
-kotlin = "2.2.10"
+kotlin = "2.2.21"
 composeBom = "2026.02.01"
 firebaseAi = "17.+"
 firebaseMessaging = "24.1.0"
@@ -24,8 +24,8 @@ barcode-scanning = "17.3.0"
 camerax = "1.4.1"
 socket-io = "2.1.0"
 core-splashscreen = "1.2.0"
-hilt = "2.51.1"
-ksp = "2.2.10-1.0.31"
+hilt = "2.60.1"
+ksp = "2.2.21-2.0.5"
 room = "2.6.1"
 maps-compose = "6.1.2"
 play-services-maps = "19.0.0"
@@ -61,7 +61,7 @@ androidx-datastore-preferences = { group = "androidx.datastore", name = "datasto
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location" }
 razorpay = { group = "com.razorpay", name = "checkout", version.ref = "razorpay" }
-phonepe = { group = "com.phonepe.intent.sdk", name = "phonepe-android-sdk", version.ref = "phonepe" }
+phonepe = { group = "phonepe.intentsdk.android.release", name = "IntentSDK", version.ref = "phonepe" }
 mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "barcode-scanning" }
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
@@ -89,6 +89,7 @@ maps-compose = { group = "com.google.maps.android", name = "maps-compose", versi
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

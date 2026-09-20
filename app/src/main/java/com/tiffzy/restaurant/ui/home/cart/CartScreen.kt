@@ -125,7 +125,7 @@ fun CartScreen(
                                         enabled = couponState !is UiState.Loading && couponCode.isNotEmpty()
                                     ) {
                                         if (couponState is UiState.Loading) {
-                                            CircularProgressIndicator(size = 20.dp, color = Color.White)
+                                            CartCircularProgressIndicator(size = 20.dp, color = Color.White)
                                         } else {
                                             Text("APPLY")
                                         }
@@ -248,19 +248,6 @@ fun CartItemRow(
 }
 
 @Composable
-fun BillRow(label: String, value: String, color: Color = Color.Unspecified, isBold: Boolean = false) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = label, style = if (isBold) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
-        Text(text = value, style = if (isBold) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal, color = color)
-    }
-}
-
-@Composable
 fun BottomCheckoutBar(total: Double, onCheckout: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -307,13 +294,4 @@ fun EmptyCartScreen(onBack: () -> Unit) {
             Text("BROWSE RESTAURANTS")
         }
     }
-}
-
-@Composable
-fun CircularProgressIndicator(size: androidx.compose.ui.unit.Dp, color: Color) {
-    androidx.compose.material3.CircularProgressIndicator(
-        modifier = Modifier.size(size),
-        color = color,
-        strokeWidth = 2.dp
-    )
 }

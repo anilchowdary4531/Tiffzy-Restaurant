@@ -50,12 +50,11 @@ class PaymentViewModel @Inject constructor(
                     val phonepeData = result.data.phonepe
                     if (phonepeData != null) {
                         try {
-                            PhonePe.init(context, PhonePeEnvironment.RELEASE, phonepeData.merchantId, phonepeData.appId)
+                            PhonePe.init(context, PhonePeEnvironment.RELEASE, phonepeData.merchantId, phonepeData.appId ?: "")
                             val intent = PhonePe.getImplicitIntent(
                                 context,
                                 phonepeData.base64Payload,
-                                phonepeData.checksum,
-                                phonepeData.apiEndPoint
+                                phonepeData.checksum
                             )
                             if (intent != null) {
                                 _paymentStatus.value = PaymentStatus.PaymentInitiated(intent)

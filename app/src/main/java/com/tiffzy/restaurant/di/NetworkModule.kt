@@ -3,6 +3,8 @@ package com.tiffzy.restaurant.di
 import com.tiffzy.restaurant.BuildConfig
 import com.tiffzy.restaurant.data.local.SessionManager
 import com.tiffzy.restaurant.data.remote.ApiService
+import com.tiffzy.restaurant.data.remote.SessionInterceptor
+import com.tiffzy.restaurant.data.remote.ConnectivityInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,11 +48,15 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
-        authInterceptor: Interceptor
+        authInterceptor: Interceptor,
+        sessionInterceptor: SessionInterceptor,
+        connectivityInterceptor: ConnectivityInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .addInterceptor(authInterceptor)
+            .addInterceptor(sessionInterceptor)
+            .addInterceptor(connectivityInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)

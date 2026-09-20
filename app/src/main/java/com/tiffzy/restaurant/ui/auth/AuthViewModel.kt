@@ -206,6 +206,10 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    suspend fun getAccountType(): String? {
+        return repository.getAccountType()
+    }
+
     suspend fun isOnboardingCompleted(): Boolean {
         return repository.isOnboardingCompleted()
     }

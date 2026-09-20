@@ -13,8 +13,11 @@ data class RestaurantEntity(
     val logo: String?,
     val bannerUrl: String?,
     val rating: Double = 0.0,
+    val reviewCount: Int = 0,
     val deliveryTime: String? = null,
     val distance: String? = null,
+    val cuisines: List<String> = emptyList(),
+    val averageCost: String? = null,
     val type: String // popular, recommended, nearby, etc.
 )
 
@@ -26,6 +29,12 @@ fun Restaurant.toEntity(type: String): RestaurantEntity {
         city = city,
         logo = logo,
         bannerUrl = bannerUrl,
+        rating = rating,
+        reviewCount = reviewCount,
+        deliveryTime = deliveryTime,
+        distance = distance,
+        cuisines = cuisines,
+        averageCost = averageCost,
         type = type
     )
 }
@@ -40,6 +49,12 @@ fun RestaurantEntity.toDomain(): Restaurant {
         country = null,
         pincode = null,
         logo = logo,
-        bannerUrl = bannerUrl
+        bannerUrl = bannerUrl,
+        rating = rating,
+        reviewCount = reviewCount,
+        deliveryTime = deliveryTime,
+        distance = distance,
+        cuisines = cuisines,
+        averageCost = averageCost
     )
 }

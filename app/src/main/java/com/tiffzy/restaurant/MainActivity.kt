@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
         // Initializing PhonePe with a placeholder. 
         // In a real app, you might want to init with real Merchant ID if it's static.
         // If dynamic, we do it in ViewModel before calling dispatch.
-        PhonePe.init(this, com.phonepe.intent.sdk.api.models.PhonePeEnvironment.RELEASE, "MERCHANT_ID", null)
+        PhonePe.init(this, com.phonepe.intent.sdk.api.models.PhonePeEnvironment.RELEASE, "MERCHANT_ID", "")
 
         askNotificationPermission()
         

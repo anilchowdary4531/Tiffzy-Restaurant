@@ -55,7 +55,8 @@ interface ApiService {
         @Query("lat") lat: Double,
         @Query("lng") lng: Double,
         @Query("page") page: Int,
-        @Query("limit") limit: Int = 10
+        @Query("limit") limit: Int = 10,
+        @Query("category") category: String? = null
     ): List<Restaurant>
 
     @GET("restaurants/{slug}")
@@ -223,4 +224,91 @@ interface ApiService {
         @Path("restaurantId") restaurantId: Int,
         @Part file: MultipartBody.Part
     ): MenuImageUploadResponse
+
+    // Table Management
+    @GET("owner/{restaurantId}/tables")
+    suspend fun getTables(
+        @Path("restaurantId") restaurantId: Int
+    ): List<TableSection>
+
+    @POST("owner/{restaurantId}/sections")
+    suspend fun createSection(
+        @Path("restaurantId") restaurantId: Int,
+        @Body request: CreateSectionRequest
+    ): TableSection
+
+    @POST("owner/{restaurantId}/tables")
+    suspend fun createTable(
+        @Path("restaurantId") restaurantId: Int,
+        @Body request: CreateTableRequest
+    ): TableData
+
+    @PUT("owner/{restaurantId}/tables/{tableId}")
+    suspend fun updateTable(
+        @Path("restaurantId") restaurantId: Int,
+        @Path("tableId") tableId: Int,
+        @Body request: CreateTableRequest
+    ): TableData
+
+    @DELETE("owner/{restaurantId}/tables/{tableId}")
+    suspend fun deleteTable(
+        @Path("restaurantId") restaurantId: Int,
+        @Path("tableId") tableId: Int
+    ): GenericResponse
+
+    // Staff Management
+    @GET("owner/{restaurantId}/staff")
+    suspend fun getStaff(
+        @Path("restaurantId") restaurantId: Int
+    ): StaffListResponse
+
+    @POST("owner/{restaurantId}/staff")
+    suspend fun createStaff(
+        @Path("restaurantId") restaurantId: Int,
+        @Body request: CreateStaffRequest
+    ): StaffMember
+
+    @PATCH("owner/{restaurantId}/staff/{staffId}/status")
+    suspend fun toggleStaffStatus(
+        @Path("restaurantId") restaurantId: Int,
+        @Path("staffId") staffId: Int,
+        @Body request: Map<String, Boolean>
+    ): StaffMember
+
+    @PUT("owner/{restaurantId}/staff/{staffId}")
+    suspend fun updateStaff(
+        @Path("restaurantId") restaurantId: Int,
+        @Path("staffId") staffId: Int,
+        @Body request: CreateStaffRequest
+    ): StaffMember
+
+    @GET("owner/{restaurantId}/staff/{staffId}/access-link")
+    suspend fun getStaffAccessLink(
+        @Path("restaurantId") restaurantId: Int,
+        @Path("staffId") staffId: Int
+    ): StaffAccessLinkResponse
+
+    // Pay Later (Khata)
+    @GET("owner/{restaurantId}/pay-later")
+    suspend fun getPayLaterAccounts(
+        @Path("restaurantId") restaurantId: Int
+    ): PayLaterListResponse
+
+    @POST("owner/{restaurantId}/pay-later")
+    suspend fun createPayLaterAccount(
+        @Path("restaurantId") restaurantId: Int,
+        @Body request: CreatePayLaterRequest
+    ): PayLaterAccount
+
+    // Supply Marketplace
+    @GET("supply/products")
+    suspend fun getSupplyProducts(
+        @Query("q") query: String? = null,
+        @Query("category") category: String? = null
+    ): SupplyProductResponse
+
+    @GET("owner/{restaurantId}/supply-orders")
+    suspend fun getSupplyOrders(
+        @Path("restaurantId") restaurantId: Int
+    ): SupplyOrderListResponse
 }

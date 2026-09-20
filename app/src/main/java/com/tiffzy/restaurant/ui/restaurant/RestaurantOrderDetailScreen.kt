@@ -1,13 +1,10 @@
 package com.tiffzy.restaurant.ui.restaurant
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,37 +12,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.tiffzy.restaurant.data.model.OrderDetails
 import com.tiffzy.restaurant.ui.components.*
+import com.tiffzy.restaurant.ui.restaurant.components.OwnerShell
 import com.tiffzy.restaurant.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RestaurantOrderDetailScreen(
     orderId: Int,
-    onBack: () -> Unit,
+    navController: NavController,
+    onLogout: () -> Unit,
     viewModel: RestaurantOrdersViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
     val order = (uiState as? RestaurantOrdersUiState.Success)?.orders?.find { it.id == orderId }
 
-    Scaffold(
-        topBar = {
-            TiffzyTopBar(
-                title = "Order Details",
-                subtitle = order?.orderNo ?: "Loading...",
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+    OwnerShell(
+        title = "Order Details",
+        restaurantName = order?.orderNo ?: "Loading...",
+        navController = navController,
+        onLogout = onLogout
     ) { innerPadding ->
         if (order == null) {
             TiffzyLoadingIndicator()
@@ -263,7 +256,7 @@ fun StatusActions(status: String, onUpdate: (String) -> Unit) {
                     Text(
                         text = "ORDER $current",
                         modifier = Modifier.padding(Dimens.PaddingMedium),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodyMedium
                     )

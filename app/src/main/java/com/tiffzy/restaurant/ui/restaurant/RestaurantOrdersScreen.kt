@@ -1,14 +1,12 @@
 package com.tiffzy.restaurant.ui.restaurant
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,10 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.tiffzy.restaurant.data.model.OrderDetails
 import com.tiffzy.restaurant.ui.components.*
+import com.tiffzy.restaurant.ui.restaurant.components.OwnerShell
 import com.tiffzy.restaurant.ui.theme.Dimens
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,19 +26,23 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RestaurantOrdersScreen(
+    navController: NavController,
+    onLogout: () -> Unit,
     onOrderClick: (Int) -> Unit,
     viewModel: RestaurantOrdersViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TiffzyTopBar(
-                title = "Live Orders",
-                subtitle = "Manage incoming and active orders"
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+    OwnerShell(
+        title = "Live Orders",
+        restaurantName = "Tiffzy Service",
+        navController = navController,
+        onLogout = onLogout,
+        actions = {
+            IconButton(onClick = { viewModel.loadOrders() }) {
+                Icon(Icons.Default.Refresh, "Refresh")
+            }
+        }
     ) { innerPadding ->
         when (val state = uiState) {
             is RestaurantOrdersUiState.Loading -> TiffzyLoadingIndicator()
@@ -89,7 +92,7 @@ fun RestaurantOrderCard(order: OrderDetails, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(Dimens.PaddingMedium)) {
             Row(
@@ -114,7 +117,7 @@ fun RestaurantOrderCard(order: OrderDetails, onClick: () -> Unit) {
             }
             
             Spacer(modifier = Modifier.height(Dimens.SpacingSmall))
-            Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
             Spacer(modifier = Modifier.height(Dimens.SpacingSmall))
             
             Row(verticalAlignment = Alignment.CenterVertically) {

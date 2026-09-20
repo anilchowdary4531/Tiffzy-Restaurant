@@ -1,192 +1,195 @@
 package com.tiffzy.restaurant.ui.restaurant
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.tiffzy.restaurant.data.model.MenuItem
-import com.tiffzy.restaurant.ui.components.TiffzyEmptyState
 import com.tiffzy.restaurant.ui.components.TiffzyErrorState
 import com.tiffzy.restaurant.ui.components.TiffzyLoadingIndicator
-import com.tiffzy.restaurant.ui.components.TiffzyTopBar
-import com.tiffzy.restaurant.ui.theme.Dimens
+import com.tiffzy.restaurant.ui.restaurant.components.OwnerShell
+import com.tiffzy.restaurant.ui.theme.TiffzyOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RestaurantMenuScreen(
+    navController: NavController,
     onAddItem: () -> Unit,
     onEditItem: (MenuItem) -> Unit,
-    onBack: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: RestaurantMenuViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var itemToDelete by remember { mutableStateOf<MenuItem?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
 
-    Scaffold(
-        topBar = {
-            TiffzyTopBar(
-                title = "Menu Management",
-                subtitle = "Manage items and availability",
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddItem, containerColor = MaterialTheme.colorScheme.primary) {
+    OwnerShell(
+        title = "Menu Studio",
+        restaurantName = "Tiffzy Menu",
+        navController = navController,
+        onLogout = onLogout,
+        actions = {
+            IconButton(onClick = onAddItem) {
                 Icon(Icons.Default.Add, "Add Item")
             }
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        }
     ) { innerPadding ->
-        when (val state = uiState) {
-            is MenuUiState.Loading -> TiffzyLoadingIndicator()
-            is MenuUiState.Error -> TiffzyErrorState(
-                message = state.message,
-                onRetry = { viewModel.loadMenu() },
-                modifier = Modifier.padding(innerPadding)
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            // Search
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search dishes...") },
+                leadingIcon = { Icon(Icons.Default.Search, null) },
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                shape = RoundedCornerShape(12.dp)
             )
-            is MenuUiState.Success -> {
-                if (state.menu.isEmpty()) {
-                    TiffzyEmptyState(
-                        message = "Your menu is empty. Start adding items!",
-                        actionLabel = "Add Item",
-                        onAction = onAddItem,
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(innerPadding),
-                        contentPadding = PaddingValues(Dimens.PaddingLarge),
-                        verticalArrangement = Arrangement.spacedBy(Dimens.SpacingMedium)
+
+            when (val state = uiState) {
+                is MenuUiState.Loading -> TiffzyLoadingIndicator()
+                is MenuUiState.Error -> TiffzyErrorState(state.message, viewModel::loadMenu)
+                is MenuUiState.Success -> {
+                    val categories = state.menu.map { it.category }.distinct()
+                    
+                    // Category Chips
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(state.menu, key = { it.id }) { item ->
-                            MenuManagementCard(
-                                item = item,
-                                onEdit = { onEditItem(item) },
-                                onDelete = { itemToDelete = item },
-                                onToggleAvailability = { viewModel.toggleAvailability(item) }
+                        item {
+                            FilterChip(
+                                selected = selectedCategory == null,
+                                onClick = { selectedCategory = null },
+                                label = { Text("All") }
+                            )
+                        }
+                        items(categories) { category ->
+                            FilterChip(
+                                selected = selectedCategory == category,
+                                onClick = { selectedCategory = category },
+                                label = { Text(category) }
                             )
                         }
                     }
+
+                    val filteredMenu = state.menu.filter {
+                        (selectedCategory == null || it.category == selectedCategory) &&
+                        (searchQuery.isEmpty() || it.name.contains(searchQuery, ignoreCase = true))
+                    }
+
+                    MenuContent(
+                        menuItems = filteredMenu,
+                        onEditItem = onEditItem,
+                        onToggleAvailability = viewModel::toggleAvailability,
+                        onDeleteItem = viewModel::deleteMenuItem
+                    )
                 }
             }
         }
     }
+}
 
-    if (itemToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { itemToDelete = null },
-            title = { Text("Delete Item") },
-            text = { Text("Are you sure you want to delete '${itemToDelete?.name}'? This action cannot be undone.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        itemToDelete?.let { viewModel.deleteMenuItem(it.id) }
-                        itemToDelete = null
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { itemToDelete = null }) {
-                    Text("Cancel")
-                }
+@Composable
+fun MenuContent(
+    menuItems: List<MenuItem>,
+    onEditItem: (MenuItem) -> Unit,
+    onToggleAvailability: (MenuItem) -> Unit,
+    onDeleteItem: (Int) -> Unit
+) {
+    if (menuItems.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No items found", color = Color.Gray)
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(menuItems) { item ->
+                MenuEntryCard(
+                    item = item,
+                    onEdit = { onEditItem(item) },
+                    onToggle = { onToggleAvailability(item) },
+                    onDelete = { onDeleteItem(item.id) }
+                )
             }
-        )
+        }
     }
 }
 
 @Composable
-fun MenuManagementCard(
+fun MenuEntryCard(
     item: MenuItem,
     onEdit: () -> Unit,
-    onDelete: () -> Unit,
-    onToggleAvailability: () -> Unit
+    onToggle: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (item.isAvailable) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier.padding(Dimens.PaddingMedium),
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 model = item.image,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(64.dp)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
             
-            Spacer(modifier = Modifier.width(Dimens.SpacingMedium))
+            Spacer(modifier = Modifier.width(16.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(text = "₹${item.price.toInt()} • ${item.category}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = item.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+                Text(text = "₹${item.price.toInt()}", color = TiffzyOrange, fontWeight = FontWeight.Bold)
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(
                         checked = item.isAvailable,
-                        onCheckedChange = { onToggleAvailability() },
-                        modifier = Modifier.scale(0.7f)
+                        onCheckedChange = { onToggle() },
+                        modifier = Modifier.graphicsLayer(scaleX = 0.7f, scaleY = 0.7f)
                     )
                     Text(
-                        text = if (item.isAvailable) "Available" else "Out of Stock",
+                        text = if (item.isAvailable) "In Stock" else "Sold Out",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (item.isAvailable) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                        color = if (item.isAvailable) Color(0xFF4CAF50) else Color.Red
                     )
                 }
             }
             
-            Row {
+            Column {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, "Edit", tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Default.Edit, "Edit", tint = Color.Gray)
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, "Delete", tint = MaterialTheme.colorScheme.error)
+                    Icon(Icons.Default.Delete, "Delete", tint = Color.Red.copy(alpha = 0.6f))
                 }
             }
         }
     }
 }
 
-// Helper to scale switch
-@Composable
-fun Modifier.customScale(scale: Float) = this.then(
-    Modifier.layout { measurable, constraints ->
-        val placeable = measurable.measure(constraints)
-        layout(
-            (placeable.width * scale).toInt(),
-            (placeable.height * scale).toInt()
-        ) {
-            placeable.placeRelative(0, 0)
-        }
-    }
-)
+
