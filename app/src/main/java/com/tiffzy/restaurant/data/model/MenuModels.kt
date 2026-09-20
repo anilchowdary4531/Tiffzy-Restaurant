@@ -7,6 +7,7 @@ data class RestaurantMenuResponse(
 
 data class MenuItem(
     val id: Int,
+    val restaurantId: Int,
     val name: String,
     val description: String?,
     val category: String,

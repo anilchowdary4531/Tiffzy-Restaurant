@@ -1,8 +1,6 @@
 package com.tiffzy.restaurant.ui.home.cart
 
-import android.content.Intent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tiffzy.restaurant.core.base.UiState
-import com.tiffzy.restaurant.data.model.Address
 import com.tiffzy.restaurant.data.model.OrderResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +26,6 @@ fun CheckoutScreen(
     onOrderConfirmed: (String) -> Unit
 ) {
     val cart by viewModel.cart.collectAsState()
-    val addresses by viewModel.addresses.collectAsState()
     val selectedAddress by viewModel.selectedAddress.collectAsState()
     val walletBalance by viewModel.walletBalance.collectAsState()
     val orderState by viewModel.orderState.collectAsState()
@@ -80,7 +76,7 @@ fun CheckoutScreen(
                         enabled = orderState !is UiState.Loading && selectedAddress != null
                     ) {
                         if (orderState is UiState.Loading) {
-                            CircularProgressIndicator(size = 24.dp, color = Color.White)
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                         } else {
                             Text("PLACE ORDER")
                         }
@@ -142,10 +138,9 @@ fun CheckoutScreen(
                 placeholder = { Text("e.g. Ring the bell, Leave at the gate...") },
                 modifier = Modifier.fillMaxWidth().background(Color.White, RoundedCornerShape(8.dp)),
                 shape = RoundedCornerShape(12.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color.White,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent
                 )
             )
 

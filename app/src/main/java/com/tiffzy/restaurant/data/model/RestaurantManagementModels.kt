@@ -31,7 +31,69 @@ data class AnalyticsResponse(
     val range: String,
     val overview: AnalyticsOverview,
     val realtime: AnalyticsRealtime,
-    val statusFunnel: List<StatusCount>
+    val statusFunnel: List<StatusCount>,
+    val revenueWaveform: List<DataPoint> = emptyList(),
+    val aiDemandRadar: AIDemandRadar? = null,
+    val peakHours: List<HourlyLoad> = emptyList(),
+    val categoryMix: List<CategoryRevenue> = emptyList(),
+    val payments: List<PaymentBreakdown> = emptyList(),
+    val fulfillment: List<ChannelBreakdown> = emptyList(),
+    val topItems: List<TopMenuItem> = emptyList(),
+    val tableHeatmap: List<TableTurnData> = emptyList()
+)
+
+data class DataPoint(
+    val label: String,
+    val value: Double,
+    val secondaryValue: Double? = null
+)
+
+data class AIDemandRadar(
+    val runRate: Double,
+    val revenuePerHour: Double,
+    val projectionEndOfDay: Double,
+    val confidence: String, // HIGH, MEDIUM, LOW
+    val peakRushWindow: String
+)
+
+data class HourlyLoad(
+    val hour: Int,
+    val orderCount: Int,
+    val isPeak: Boolean = false
+)
+
+data class CategoryRevenue(
+    val name: String,
+    val revenue: Double,
+    val percentage: Float
+)
+
+data class PaymentBreakdown(
+    val method: String, // UPI, Card, Cash, Wallet
+    val count: Int,
+    val amount: Double,
+    val percentage: Float
+)
+
+data class ChannelBreakdown(
+    val channel: String, // Dine-in, Takeaway, Delivery
+    val count: Int,
+    val amount: Double,
+    val percentage: Float
+)
+
+data class TopMenuItem(
+    val rank: Int,
+    val name: String,
+    val units: Int,
+    val revenue: Double,
+    val avgPrice: Double
+)
+
+data class TableTurnData(
+    val tableNo: String,
+    val turns: Int,
+    val revenue: Double
 )
 
 data class AnalyticsOverview(
@@ -39,7 +101,10 @@ data class AnalyticsOverview(
     val totalRevenue: Double,
     val avgOrderValue: Double,
     val deliveredOrders: Int,
-    val cancelledOrders: Int
+    val cancelledOrders: Int,
+    val revenueChange: String = "0%",
+    val ordersChange: String = "0%",
+    val repeatRate: String = "0%"
 )
 
 data class AnalyticsRealtime(

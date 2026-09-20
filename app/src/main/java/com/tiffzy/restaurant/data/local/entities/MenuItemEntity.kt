@@ -13,7 +13,14 @@ data class MenuItemEntity(
     val category: String,
     val image: String?,
     val price: Double,
-    val isAvailable: Boolean
+    val isAvailable: Boolean,
+    val isFeatured: Boolean,
+    val rating: Double,
+    val reviewCount: Int,
+    val orderCount: Int,
+    val isVeg: Boolean,
+    val isBestSeller: Boolean,
+    val isFavorite: Boolean
 )
 
 fun MenuItemEntity.toDomain(): MenuItem {
@@ -25,7 +32,14 @@ fun MenuItemEntity.toDomain(): MenuItem {
         category = category,
         image = image,
         price = price,
-        isAvailable = isAvailable
+        isAvailable = isAvailable,
+        isFeatured = isFeatured,
+        rating = rating,
+        reviewCount = reviewCount,
+        orderCount = orderCount,
+        isVeg = isVeg,
+        isBestSeller = isBestSeller,
+        isFavorite = isFavorite
     )
 }
 
@@ -38,6 +52,13 @@ fun MenuItem.toEntity(): MenuItemEntity {
         category = category,
         image = image,
         price = price,
-        isAvailable = isAvailable
+        isAvailable = isAvailable,
+        isFeatured = isFeatured,
+        rating = rating,
+        reviewCount = reviewCount,
+        orderCount = orderCount,
+        isVeg = isVeg,
+        isBestSeller = isBestSeller,
+        isFavorite = isFavorite
     )
 }

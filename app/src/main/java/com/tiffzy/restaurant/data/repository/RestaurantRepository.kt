@@ -46,11 +46,11 @@ class RestaurantRepository @Inject constructor(
         return result
     }
 
-    fun getNearbyRestaurants(lat: Double, lng: Double): Flow<PagingData<Restaurant>> {
+    fun getNearbyRestaurants(lat: Double, lng: Double, category: String? = null): Flow<PagingData<Restaurant>> {
         @OptIn(ExperimentalPagingApi::class)
         return Pager(
             config = PagingConfig(pageSize = 10, prefetchDistance = 2),
-            remoteMediator = RestaurantRemoteMediator(apiService, database, lat, lng),
+            remoteMediator = RestaurantRemoteMediator(apiService, database, lat, lng, category),
             pagingSourceFactory = { restaurantDao.getNearbyRestaurantsPaging() }
         ).flow.map { pagingData ->
             pagingData.map { it.toDomain() }
@@ -155,5 +155,68 @@ class RestaurantRepository @Inject constructor(
 
     suspend fun uploadMenuImage(restaurantId: Int, file: MultipartBody.Part): Resource<MenuImageUploadResponse> {
         return safeApiCall { apiService.uploadMenuImage(restaurantId, file) }
+    }
+
+    // Table Management
+    suspend fun getTables(restaurantId: Int): Resource<TableGroupResponse> {
+        return safeApiCall { 
+            val sections = apiService.getTables(restaurantId)
+            TableGroupResponse(sections)
+        }
+    }
+
+    suspend fun createSection(restaurantId: Int, name: String): Resource<TableSection> {
+        return safeApiCall { apiService.createSection(restaurantId, CreateSectionRequest(name)) }
+    }
+
+    suspend fun createTable(restaurantId: Int, request: CreateTableRequest): Resource<TableData> {
+        return safeApiCall { apiService.createTable(restaurantId, request) }
+    }
+
+    suspend fun updateTable(restaurantId: Int, tableId: Int, request: CreateTableRequest): Resource<TableData> {
+        return safeApiCall { apiService.updateTable(restaurantId, tableId, request) }
+    }
+
+    suspend fun deleteTable(restaurantId: Int, tableId: Int): Resource<GenericResponse> {
+        return safeApiCall { apiService.deleteTable(restaurantId, tableId) }
+    }
+
+    // Staff Management
+    suspend fun getStaff(restaurantId: Int): Resource<StaffListResponse> {
+        return safeApiCall { apiService.getStaff(restaurantId) }
+    }
+
+    suspend fun createStaff(restaurantId: Int, request: CreateStaffRequest): Resource<StaffMember> {
+        return safeApiCall { apiService.createStaff(restaurantId, request) }
+    }
+
+    suspend fun toggleStaffStatus(restaurantId: Int, staffId: Int, isActive: Boolean): Resource<StaffMember> {
+        return safeApiCall { apiService.toggleStaffStatus(restaurantId, staffId, mapOf("isActive" to isActive)) }
+    }
+
+    suspend fun updateStaff(restaurantId: Int, staffId: Int, request: CreateStaffRequest): Resource<StaffMember> {
+        return safeApiCall { apiService.updateStaff(restaurantId, staffId, request) }
+    }
+
+    suspend fun getStaffAccessLink(restaurantId: Int, staffId: Int): Resource<StaffAccessLinkResponse> {
+        return safeApiCall { apiService.getStaffAccessLink(restaurantId, staffId) }
+    }
+
+    // Pay Later
+    suspend fun getPayLaterAccounts(restaurantId: Int): Resource<PayLaterListResponse> {
+        return safeApiCall { apiService.getPayLaterAccounts(restaurantId) }
+    }
+
+    suspend fun createPayLaterAccount(restaurantId: Int, request: CreatePayLaterRequest): Resource<PayLaterAccount> {
+        return safeApiCall { apiService.createPayLaterAccount(restaurantId, request) }
+    }
+
+    // Supply Marketplace
+    suspend fun getSupplyProducts(query: String? = null, category: String? = null): Resource<SupplyProductResponse> {
+        return safeApiCall { apiService.getSupplyProducts(query, category) }
+    }
+
+    suspend fun getSupplyOrders(restaurantId: Int): Resource<SupplyOrderListResponse> {
+        return safeApiCall { apiService.getSupplyOrders(restaurantId) }
     }
 }

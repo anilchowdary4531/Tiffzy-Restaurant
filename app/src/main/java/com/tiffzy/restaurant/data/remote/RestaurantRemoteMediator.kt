@@ -15,7 +15,8 @@ class RestaurantRemoteMediator(
     private val apiService: ApiService,
     private val database: TiffzyDatabase,
     private val lat: Double,
-    private val lng: Double
+    private val lng: Double,
+    private val category: String? = null
 ) : RemoteMediator<Int, RestaurantEntity>() {
 
     override suspend fun load(
@@ -42,7 +43,7 @@ class RestaurantRemoteMediator(
         }
 
         try {
-            val response = apiService.getNearbyRestaurants(lat, lng, page, state.config.pageSize)
+            val response = apiService.getNearbyRestaurants(lat, lng, page, state.config.pageSize, category)
             val endOfPaginationReached = response.isEmpty()
             
             database.withTransaction {

@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.UnknownHostException
 
 abstract class BaseRepository {
 
@@ -13,8 +14,10 @@ abstract class BaseRepository {
             try {
                 Resource.Success(apiCall.invoke())
             } catch (throwable: Throwable) {
+                throwable.printStackTrace()
                 when (throwable) {
-                    is IOException -> Resource.Error("Network Failure: Please check your internet connection")
+                    is UnknownHostException -> Resource.Error("Server not reachable. Please check your internet connection or verify the server address (api.tiffzy.com).")
+                    is IOException -> Resource.Error(throwable.message ?: "Network Failure: Please check your internet connection")
                     is HttpException -> {
                         val code = throwable.code()
                         val errorResponse = throwable.response()?.errorBody()?.string()

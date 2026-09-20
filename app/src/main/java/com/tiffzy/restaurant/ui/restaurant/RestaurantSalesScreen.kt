@@ -1,14 +1,15 @@
 package com.tiffzy.restaurant.ui.restaurant
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,16 +22,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.tiffzy.restaurant.data.model.AnalyticsResponse
 import com.tiffzy.restaurant.ui.components.TiffzyErrorState
 import com.tiffzy.restaurant.ui.components.TiffzyLoadingIndicator
-import com.tiffzy.restaurant.ui.components.TiffzyTopBar
+import com.tiffzy.restaurant.ui.restaurant.components.OwnerShell
 import com.tiffzy.restaurant.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RestaurantSalesScreen(
-    onBack: () -> Unit,
+    navController: NavController,
+    onLogout: () -> Unit,
     viewModel: RestaurantSalesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -38,29 +41,22 @@ fun RestaurantSalesScreen(
 
     val ranges = listOf(
         "24h" to "Today",
-        "7d" to "Last 7 Days",
+        "7d" to "7 Days",
         "30d" to "Monthly"
     )
 
-    LaunchedEffect(Unit) {
-        viewModel.loadAnalytics("24h")
-    }
-
-    Scaffold(
-        topBar = {
-            TiffzyTopBar(
-                title = "Sales Analytics",
-                subtitle = "Revenue and growth reports",
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+    OwnerShell(
+        title = "Sales Analytics",
+        restaurantName = "Reports",
+        navController = navController,
+        onLogout = onLogout,
+        actions = {
+            IconButton(onClick = { viewModel.loadAnalytics(currentRange) }) {
+                Icon(Icons.Default.Refresh, "Refresh")
+            }
+        }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             // Range Selector
             SingleChoiceSegmentedButtonRow(
                 modifier = Modifier
@@ -85,7 +81,7 @@ fun RestaurantSalesScreen(
                     onRetry = { viewModel.loadAnalytics(currentRange) }
                 )
                 is SalesUiState.Success -> {
-                    AnalyticsContent(state.analytics)
+                    SalesAnalyticsContent(state.analytics)
                 }
             }
         }
@@ -93,7 +89,7 @@ fun RestaurantSalesScreen(
 }
 
 @Composable
-fun AnalyticsContent(analytics: AnalyticsResponse) {
+fun SalesAnalyticsContent(analytics: AnalyticsResponse) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -181,7 +177,11 @@ fun AnalyticsContent(analytics: AnalyticsResponse) {
         )
         Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
 
-        analytics.statusFunnel.forEach { statusCount ->
+        // Defensive check for potential null from API
+        @Suppress("SENSELESS_COMPARISON")
+        val statusFunnel = if (analytics.statusFunnel == null) emptyList() else analytics.statusFunnel
+
+        statusFunnel.forEach { statusCount ->
             val percentage = if (overview.totalOrders > 0) statusCount.count.toFloat() / overview.totalOrders else 0f
             
             Column(modifier = Modifier.padding(vertical = 4.dp)) {
@@ -214,7 +214,7 @@ fun AnalyticsStatCard(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(Dimens.PaddingMedium)) {
             Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))

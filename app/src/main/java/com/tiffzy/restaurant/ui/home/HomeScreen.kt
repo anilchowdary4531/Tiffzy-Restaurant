@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 import coil.compose.AsyncImage
 import com.tiffzy.restaurant.core.base.UiState
 import com.tiffzy.restaurant.data.model.Restaurant
@@ -36,6 +35,7 @@ fun HomeScreen(
     val homeState by viewModel.homeState.collectAsState()
     val location by viewModel.currentLocation.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
     val nearbyRestaurants = viewModel.nearbyRestaurants.collectAsLazyPagingItems()
 
     val isRefreshing = homeState is UiState.Loading
@@ -77,7 +77,8 @@ fun HomeScreen(
                         item {
                             CategorySection(
                                 categories = data.categories,
-                                onCategoryClick = { /* TODO */ }
+                                selectedCategory = selectedCategory,
+                                onCategoryClick = { viewModel.onCategoryClick(it) }
                             )
                         }
 
@@ -135,7 +136,11 @@ fun HomeScreen(
                     )
                 }
 
-                items(nearbyRestaurants) { restaurant ->
+                items(
+                    count = nearbyRestaurants.itemCount,
+                    key = { index -> nearbyRestaurants[index]?.id ?: index }
+                ) { index ->
+                    val restaurant = nearbyRestaurants[index]
                     restaurant?.let {
                         RestaurantRowItem(
                             restaurant = it,
@@ -194,7 +199,7 @@ fun RestaurantHorizontalSection(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp, bottom = 12.dp)
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
         )
         
         LazyRow(
